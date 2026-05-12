@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <RootNamespace>redstoneSim.UI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RedstoneSim.Application\RedstoneSim.Application.csproj" />
-      <ProjectReference Include="..\RedstoneSim.Infrastructure\RedstoneSim.Infrastructure.csproj" />
+      <ProjectReference Include="..\RedstoneStudio.Application\RedstoneStudio.Application.csproj" />
+      <ProjectReference Include="..\RedstoneStudio.Infrastructure\RedstoneStudio.Infrastructure.csproj" />
     </ItemGroup>
 </Project>

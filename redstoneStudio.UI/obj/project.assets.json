@@ -712,40 +712,40 @@
           }
         }
       },
-      "RedstoneSim.Application/1.0.0": {
+      "RedstoneStudio.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "RedstoneSim.Domain": "1.0.0"
+          "RedstoneStudio.Domain": "1.0.0"
         },
         "compile": {
-          "bin/placeholder/RedstoneSim.Application.dll": {}
+          "bin/placeholder/RedstoneStudio.Application.dll": {}
         },
         "runtime": {
-          "bin/placeholder/RedstoneSim.Application.dll": {}
+          "bin/placeholder/RedstoneStudio.Application.dll": {}
         }
       },
-      "RedstoneSim.Domain/1.0.0": {
+      "RedstoneStudio.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "compile": {
-          "bin/placeholder/RedstoneSim.Domain.dll": {}
+          "bin/placeholder/RedstoneStudio.Domain.dll": {}
         },
         "runtime": {
-          "bin/placeholder/RedstoneSim.Domain.dll": {}
+          "bin/placeholder/RedstoneStudio.Domain.dll": {}
         }
       },
-      "RedstoneSim.Infrastructure/1.0.0": {
+      "RedstoneStudio.Infrastructure/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "RedstoneSim.Application": "1.0.0"
+          "RedstoneStudio.Application": "1.0.0"
         },
         "compile": {
-          "bin/placeholder/RedstoneSim.Infrastructure.dll": {}
+          "bin/placeholder/RedstoneStudio.Infrastructure.dll": {}
         },
         "runtime": {
-          "bin/placeholder/RedstoneSim.Infrastructure.dll": {}
+          "bin/placeholder/RedstoneStudio.Infrastructure.dll": {}
         }
       }
     }
@@ -1733,20 +1733,20 @@
         "tmds.dbus.protocol.nuspec"
       ]
     },
-    "RedstoneSim.Application/1.0.0": {
+    "RedstoneStudio.Application/1.0.0": {
       "type": "project",
-      "path": "../RedstoneSim.Application/RedstoneSim.Application.csproj",
-      "msbuildProject": "../RedstoneSim.Application/RedstoneSim.Application.csproj"
+      "path": "../RedstoneStudio.Application/RedstoneStudio.Application.csproj",
+      "msbuildProject": "../RedstoneStudio.Application/RedstoneStudio.Application.csproj"
     },
-    "RedstoneSim.Domain/1.0.0": {
+    "RedstoneStudio.Domain/1.0.0": {
       "type": "project",
-      "path": "../RedstoneSim.Domain/RedstoneSim.Domain.csproj",
-      "msbuildProject": "../RedstoneSim.Domain/RedstoneSim.Domain.csproj"
+      "path": "../RedstoneStudio.Domain/RedstoneStudio.Domain.csproj",
+      "msbuildProject": "../RedstoneStudio.Domain/RedstoneStudio.Domain.csproj"
     },
-    "RedstoneSim.Infrastructure/1.0.0": {
+    "RedstoneStudio.Infrastructure/1.0.0": {
       "type": "project",
-      "path": "../RedstoneSim.Infrastructure/RedstoneSim.Infrastructure.csproj",
-      "msbuildProject": "../RedstoneSim.Infrastructure/RedstoneSim.Infrastructure.csproj"
+      "path": "../RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj",
+      "msbuildProject": "../RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1757,8 +1757,8 @@
       "Avalonia.Themes.Fluent >= 12.0.2",
       "AvaloniaUI.DiagnosticsSupport >= 2.2.1",
       "CommunityToolkit.Mvvm >= 8.4.1",
-      "RedstoneSim.Application >= 1.0.0",
-      "RedstoneSim.Infrastructure >= 1.0.0"
+      "RedstoneStudio.Application >= 1.0.0",
+      "RedstoneStudio.Infrastructure >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1767,11 +1767,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/dimi/Developer/School/Informatica/redstone-sim/redstoneSim.UI/redstoneSim.UI.csproj",
-      "projectName": "redstoneSim.UI",
-      "projectPath": "/Users/dimi/Developer/School/Informatica/redstone-sim/redstoneSim.UI/redstoneSim.UI.csproj",
+      "projectUniqueName": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
+      "projectName": "redstoneStudio.UI",
+      "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
       "packagesPath": "/Users/dimi/.nuget/packages/",
-      "outputPath": "/Users/dimi/Developer/School/Informatica/redstone-sim/redstoneSim.UI/obj/",
+      "outputPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/dimi/.nuget/NuGet/NuGet.Config"
@@ -1786,11 +1786,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/RedstoneSim.Application.csproj": {
-              "projectPath": "/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/RedstoneSim.Application.csproj"
+            "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Application/RedstoneStudio.Application.csproj": {
+              "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Application/RedstoneStudio.Application.csproj"
             },
-            "/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Infrastructure/RedstoneSim.Infrastructure.csproj": {
-              "projectPath": "/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Infrastructure/RedstoneSim.Infrastructure.csproj"
+            "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj": {
+              "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj"
             }
           }
         }
