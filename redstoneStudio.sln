@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redstoneSim.UI", "redstoneSim.UI\redstoneSim.UI.csproj", "{AFBC249A-2EDC-4BF7-9AC7-1B5F5665F300}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redstoneStudio.UI", "redstoneStudio.UI\redstoneStudio.UI.csproj", "{AFBC249A-2EDC-4BF7-9AC7-1B5F5665F300}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneSim.Domain", "RedstoneSim.Domain\RedstoneSim.Domain.csproj", "{95748707-3161-4A92-BFCD-CAF107DEDE99}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneStudio.Domain", "RedstoneStudio.Domain\RedstoneStudio.Domain.csproj", "{95748707-3161-4A92-BFCD-CAF107DEDE99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneSim.Application", "RedstoneSim.Application\RedstoneSim.Application.csproj", "{BA507D89-E8F0-43C5-8204-8FE635BECB58}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneStudio.Application", "RedstoneStudio.Application\RedstoneStudio.Application.csproj", "{BA507D89-E8F0-43C5-8204-8FE635BECB58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneSim.Infrastructure", "RedstoneSim.Infrastructure\RedstoneSim.Infrastructure.csproj", "{8BD5F2B9-5529-40B3-8483-FEF86EE7863D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedstoneStudio.Infrastructure", "RedstoneStudio.Infrastructure\RedstoneStudio.Infrastructure.csproj", "{8BD5F2B9-5529-40B3-8483-FEF86EE7863D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

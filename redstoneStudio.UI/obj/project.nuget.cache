@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "buCBUQn74Bo=",
+  "dgSpecHash": "ttt5sLqlVEQ=",
   "success": true,
-  "projectFilePath": "/Users/dimi/Developer/School/Informatica/redstone-sim/redstoneSim.UI/redstoneSim.UI.csproj",
+  "projectFilePath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
   "expectedPackageFiles": [
     "/Users/dimi/.nuget/packages/avalonia/12.0.2/avalonia.12.0.2.nupkg.sha512",
     "/Users/dimi/.nuget/packages/avalonia.angle.windows.natives/2.1.25547.20250602/avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",
