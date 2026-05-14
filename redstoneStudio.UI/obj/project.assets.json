@@ -1762,19 +1762,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/dimi/.nuget/packages/": {}
+    "C:\\Users\\Utente\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
+      "projectUniqueName": "C:\\Users\\Utente\\Desktop\\redstone-studio\\redstoneStudio.UI\\redstoneStudio.UI.csproj",
       "projectName": "redstoneStudio.UI",
-      "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
-      "packagesPath": "/Users/dimi/.nuget/packages/",
-      "outputPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/obj/",
+      "projectPath": "C:\\Users\\Utente\\Desktop\\redstone-studio\\redstoneStudio.UI\\redstoneStudio.UI.csproj",
+      "packagesPath": "C:\\Users\\Utente\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Utente\\Desktop\\redstone-studio\\redstoneStudio.UI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/dimi/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Utente\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -1786,11 +1786,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Application/RedstoneStudio.Application.csproj": {
-              "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Application/RedstoneStudio.Application.csproj"
+            "C:\\Users\\Utente\\Desktop\\redstone-studio\\RedstoneStudio.Application\\RedstoneStudio.Application.csproj": {
+              "projectPath": "C:\\Users\\Utente\\Desktop\\redstone-studio\\RedstoneStudio.Application\\RedstoneStudio.Application.csproj"
             },
-            "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj": {
-              "projectPath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Infrastructure/RedstoneStudio.Infrastructure.csproj"
+            "C:\\Users\\Utente\\Desktop\\redstone-studio\\RedstoneStudio.Infrastructure\\RedstoneStudio.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\Utente\\Desktop\\redstone-studio\\RedstoneStudio.Infrastructure\\RedstoneStudio.Infrastructure.csproj"
             }
           }
         }
@@ -1804,8 +1804,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "10.0.100"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -1847,26 +1846,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[8.0.23, 8.0.23]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.osx-arm64",
-            "version": "[8.0.23, 8.0.23]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.23, 8.0.23]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/Users/dimi/.dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
