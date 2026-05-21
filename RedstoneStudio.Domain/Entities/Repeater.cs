@@ -6,13 +6,14 @@ namespace redstone_stone.Domain.Entities;
 
 public class Repeater : Entity, IPowerable, IConnectable
 {
-    private Direction _facing { get; set; }
+    SignalStrength IPowerable.CurrentPower => new SignalStrength(0);
+    private Direction _output { get; set; }
     private int _delay { get; set; }
     private bool _on;
 
-    public Repeater() : base()
+    public Repeater(Direction output) : base()
     {
-        _facing = Direction.North;
+        _output = output;
         _delay = 1;
         _on = false;
     }
@@ -34,17 +35,17 @@ public class Repeater : Entity, IPowerable, IConnectable
         }
     }
 
-    void UpdatePower(SignalStrength incomingPower)
+    void IPowerable.UpdatePower(SignalStrength incomingPower)
     {
-        _on = incomingPower > 0;
+        _on = incomingPower.Value > 0;
     }
 
-    bool CanConnectTo(Direction direction)
+    bool IConnectable.CanConnectTo(Direction direction)
     {
-        if(_facing == Direction.North && direction == Direction.South) return true;
-        else if(_facing == Direction.East && direction == Direction.West) return true;
-        else if(_facing == Direction.South && direction == Direction.North) return true;
-        else if(_facing == Direction.West && direction == Direction.East) return true;
+        if(_output == Direction.North && direction == Direction.South) return true;
+        else if(_output == Direction.East && direction == Direction.West) return true;
+        else if(_output == Direction.South && direction == Direction.North) return true;
+        else if(_output == Direction.West && direction == Direction.East) return true;
 
         return false;
     }
