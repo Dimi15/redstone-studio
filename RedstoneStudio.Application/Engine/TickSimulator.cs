@@ -27,15 +27,13 @@ public class TickSimulator
         AdvanceTickables();
         ResetAllPower();
 
-        // First flood: permanent sources (levers, redstone blocks, buttons).
-        var seeds = CollectSources();
-        BfsFlood(seeds);
+        BfsFlood(CollectSources());
 
-        // Torch pass: torches invert based on wire power, then re-flood if any changed.
-        if (ResolveTorches())
-            BfsFlood(CollectTorchSources());
+        ResolveTorches();
+        BfsFlood(CollectTorchSources());
 
         ResolveRepeaters();
+        ResolveLamps();
     }
 
     /// <summary>Resets tick count and clears repeater delay queue.</summary>
@@ -59,7 +57,8 @@ public class TickSimulator
             if (_board.GetEntity(pos) is IPowerable p) p.UpdatePower(SignalStrength.Min);
     }
 
-    // Collects every active power source that isn't a torch (torches are handled separately).
+    // Seeds the BFS with the 4 neighbors of every active non-torch source.
+    // Sources themselves are not Wire/Lamp, so we flood from their neighbors at full power.
     private Queue<(Position, int)> CollectSources()
     {
         var queue = new Queue<(Position, int)>();
@@ -67,77 +66,77 @@ public class TickSimulator
         {
             var e = _board.GetEntity(pos);
             if (e is (Lever or RedstoneBlock or Button) && e.IsPowering())
-                queue.Enqueue((pos, 15));
+                EnqueueNeighbors(pos, 15, queue);
         }
         return queue;
     }
 
-    // Collects all torches that are currently lit (used for the secondary flood pass).
+    // Seeds the BFS with neighbors of every currently-lit torch.
     private Queue<(Position, int)> CollectTorchSources()
     {
         var queue = new Queue<(Position, int)>();
         foreach (var pos in _board.AllPositions())
             if (_board.GetEntity(pos) is Torch t && t.IsOn)
-                queue.Enqueue((pos, 15));
+                EnqueueNeighbors(pos, 15, queue);
         return queue;
     }
 
-    // BFS: power spreads from seeds through Wire and RedstoneLamp cells.
-    // Wires propagate further; lamps absorb power but are terminal nodes.
+    // Enqueues all in-bounds neighbors of pos at the given power level.
+    private void EnqueueNeighbors(Position pos, int power, Queue<(Position, int)> queue)
+    {
+        foreach (Direction dir in Enum.GetValues<Direction>())
+        {
+            var n = pos.Move(dir);
+            if (_board.IsInBounds(n)) queue.Enqueue((n, power));
+        }
+    }
+
+    // BFS: floods power through Wire cells only. Lamps are resolved in ResolveLamps().
+    // No visited set — power strictly decreases, so the guard prevents infinite loops.
     private void BfsFlood(Queue<(Position pos, int power)> seeds)
     {
-        var visited = new HashSet<Position>();
-
         while (seeds.Count > 0)
         {
             var (current, power) = seeds.Dequeue();
-            if (!_board.IsInBounds(current) || visited.Contains(current)) continue;
-            visited.Add(current);
+            if (!_board.IsInBounds(current) || power <= 0) continue;
 
-            var entity = _board.GetEntity(current);
+            if (_board.GetEntity(current) is not Wire wire) continue;
+            if (power <= wire.CurrentPower.Value) continue;
 
-            if (entity is Wire wire)
+            wire.UpdatePower(new SignalStrength(power));
+
+            foreach (Direction dir in Enum.GetValues<Direction>())
             {
-                // Wires keep the highest power they receive from any direction.
-                if (power <= wire.CurrentPower.Value) continue;
-                wire.UpdatePower(new SignalStrength(power));
+                var next = current.Move(dir);
+                if (_board.IsInBounds(next))
+                    seeds.Enqueue((next, power - 1));
+            }
+        }
+    }
 
-                if (power > 0)
-                    foreach (Direction dir in Enum.GetValues<Direction>())
-                    {
-                        var next = current.Move(dir);
-                        if (_board.IsInBounds(next) && !visited.Contains(next))
-                            seeds.Enqueue((next, power - 1));
-                    }
-            }
-            else if (entity is RedstoneLamp lamp)
-            {
-                // Lamps light up when adjacent to powered wires but don't pass power on.
-                if (power > lamp.CurrentPower.Value)
-                    lamp.UpdatePower(new SignalStrength(power));
-            }
+    // Lamps light up based on the maximum power of their immediate neighbors.
+    private void ResolveLamps()
+    {
+        foreach (var pos in _board.AllPositions())
+        {
+            if (_board.GetEntity(pos) is not RedstoneLamp lamp) continue;
+            lamp.UpdatePower(new SignalStrength(MaxNeighborPower(pos)));
         }
     }
 
     // Re-evaluates every torch based on the current power of its four neighbors.
-    // Returns true if at least one torch changed state (triggers a re-flood).
-    private bool ResolveTorches()
+    // Always called unconditionally; CollectTorchSources() then seeds the BFS from lit torches.
+    // NOTE: ResetAllPower() calls UpdatePower(0) on torches, which sets _on=true (inversion of 0).
+    // That intermediate state makes the old "anyChanged" guard always false, so we flood
+    // unconditionally instead and let CollectTorchSources() filter to only lit torches.
+    private void ResolveTorches()
     {
-        bool anyChanged = false;
-
         foreach (var pos in _board.AllPositions())
         {
             if (_board.GetEntity(pos) is not Torch torch) continue;
-
-            bool wasPowering = torch.IsPowering();
             int maxNeighborPower = MaxNeighborPower(pos);
-
             ((IPowerable)torch).UpdatePower(new SignalStrength(maxNeighborPower));
-
-            if (torch.IsPowering() != wasPowering) anyChanged = true;
         }
-
-        return anyChanged;
     }
 
     // Ticks down the repeater delay queue, then enqueues new outputs for powered repeaters.

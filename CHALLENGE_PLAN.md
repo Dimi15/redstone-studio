@@ -1,57 +1,71 @@
-# Redstone Studio — Challenge Plan
+# CHALLENGE_PLAN.md — Redstone Studio
+> Execution roadmap, progress tracker, and handoff reference.
+
+---
 
 ## Architecture Overview
 
-Clean Architecture with 4 layers:
-
 ```
-redstoneStudio.UI          → Avalonia UI (MVVM, ViewModels, AXAML views)
-RedstoneStudio.Application → Simulation engine, grid management
-RedstoneStudio.Domain      → Entities, value objects, interfaces
-RedstoneStudio.Infrastructure → JSON persistence
+redstoneStudio.UI              Avalonia 12 (MVVM, ViewModels, AXAML)
+RedstoneStudio.Application     Simulation engine, grid management
+RedstoneStudio.Domain          Entities, enums, value objects, interfaces
+RedstoneStudio.Infrastructure  JSON persistence (Save / Load)
 ```
 
-All namespaces use the `redstone_stone.*` convention (not the csproj RootNamespace).
+All namespaces use the `redstone_stone.*` convention throughout the solution.  
+The UI project does **not** have `<ImplicitUsings>` — all ViewModels and Views must include explicit `using System;` / `using System.Threading.Tasks;` etc.
 
 ---
 
 ## Component State Logic
 
 ### Entity Hierarchy
-```
-Entity (abstract)
-├── Air            — empty cell, no power
-├── Block          — solid non-conducting block
-├── Lever          — toggles _on; IsPowering() = _on
-├── Button         — ITickable; emits power for N ticks after ChangeState(); auto-off
-├── RedstoneBlock  — always IsPowering() = true
-├── Wire           — IPowerable; CurrentPower set by BFS engine (range 0–15)
-├── Torch          — IPowerable, IConnectable; inverts: on if input=0, off if input>0
-├── Repeater       — IPowerable, IConnectable; outputs 15 if input>0, with tick delay 1–4
-└── RedstoneLamp   — IPowerable; lights up when powered, terminal node (no output)
-```
+
+| Entity | Role | Key interface(s) |
+|---|---|---|
+| `Air` | Empty cell — no behaviour | — |
+| `Block` | Solid, non-conducting | — |
+| `Wire` | Carries signal (0-15); BFS engine sets power | `IPowerable`, `IConnectable` |
+| `Lever` | Toggle on/off power source | — |
+| `Button` | Pulse source — fires for N ticks then auto-off | `ITickable` |
+| `RedstoneBlock` | Always-on power source (constant 15) | — |
+| `Torch` | Inverter — on when input = 0, off otherwise | `IPowerable`, `IConnectable` |
+| `Repeater` | Amplifier + delay (1-4 ticks), directional | `IPowerable`, `IConnectable` |
+| `RedstoneLamp` | Output indicator — lights when powered, terminal node | `IPowerable` |
 
 ### Interfaces
-- `IPowerable` — `CurrentPower` property + `UpdatePower(SignalStrength)` method
-- `IConnectable` — `CanConnectTo(Direction)` method
-- `ITickable` — `Tick()` method; called once per simulator tick (for time-based entities)
 
-### Signal Flow (one tick)
-1. Reset all Wire/Torch/Repeater CurrentPower to 0
-2. BFS flood from all active sources (Lever=on, RedstoneBlock, Torch=on)
-3. Wire power decays by 1 per step; each wire takes the max it receives
-4. After wire flood: re-evaluate Torches (on if no neighbor has power)
-5. If any Torch changed state → run another wire flood from newly-lit torches
-6. Repeater pass: if input-side neighbor is powered, queue output after _delay ticks
+| Interface | Method(s) | Purpose |
+|---|---|---|
+| `IPowerable` | `CurrentPower { get; }`, `UpdatePower(SignalStrength)` | Blocks that receive/store signal |
+| `IConnectable` | `CanConnectTo(Direction)` | Directional connectivity rules |
+| `ITickable` | `Tick()` | Time-based countdown (Button) |
+
+### Signal Flow — one tick
+
+```
+1. AdvanceTickables()        → Button counts down its pulse
+2. ResetAllPower()           → All IPowerable blocks set to 0
+3. CollectSources()          → Enqueue 4 NEIGHBORS of Lever/Button/RedstoneBlock at power 15
+4. BfsFlood(seeds)           → Power floods through Wires only (−1/hop); no visited set
+5. ResolveTorches()          → Each torch reads MaxNeighborPower, inverts state
+6. BfsFlood(CollectTorchSources()) → UNCONDITIONAL flood from lit torches (not conditional on change)
+7. ResolveRepeaters()        → Tick-down pending outputs; enqueue new ones with delay
+8. ResolveLamps()            → Each lamp = MaxNeighborPower (no BFS decay on last hop)
+```
+
+Key invariant: BFS seeds neighbors of sources (not sources themselves), because sources are not Wire/Lamp and would silently drop out of the BFS otherwise.
 
 ### Direction Enum
-`North = up (Y-1), East = right (X+1), South = down (Y+1), West = left (X-1)`
+
+`North = 0 (Y−1)` · `East = 1 (X+1)` · `South = 2 (Y+1)` · `West = 3 (X−1)`  
+`Opposite(d) = (d + 2) % 4`
 
 ---
 
 ## JSON Schema
 
-File extension: `.json`
+Only **non-Air** cells are persisted.
 
 ```json
 {
@@ -60,73 +74,79 @@ File extension: `.json`
   "Cells": [
     { "X": 3,  "Y": 5, "Type": "Lever",        "IsOn": true },
     { "X": 4,  "Y": 5, "Type": "Wire" },
-    { "X": 5,  "Y": 5, "Type": "Wire" },
-    { "X": 6,  "Y": 5, "Type": "Torch",     "Direction": "West",  "Vertical": false },
-    { "X": 8,  "Y": 5, "Type": "Repeater",  "Direction": "East",  "Delay": 2 },
-    { "X": 10, "Y": 5, "Type": "RedstoneBlock" },
-    { "X": 11, "Y": 5, "Type": "Block" }
+    { "X": 6,  "Y": 5, "Type": "Torch",     "Direction": "West", "Vertical": false },
+    { "X": 8,  "Y": 5, "Type": "Repeater",  "Direction": "East", "Delay": 2 },
+    { "X": 10, "Y": 5, "Type": "Button" },
+    { "X": 12, "Y": 5, "Type": "RedstoneLamp" },
+    { "X": 14, "Y": 5, "Type": "RedstoneBlock" },
+    { "X": 16, "Y": 5, "Type": "Block" }
   ]
 }
 ```
 
-Only non-Air cells are serialized. `Direction` and `Delay` fields are omitted for types that don't use them.
+---
+
+## File Map
+
+| File | Layer | Status |
+|---|---|---|
+| `Domain/Enums/Direction.cs` | Domain | ✅ enum North/East/South/West |
+| `Domain/Enums/Blocktype.cs` | Domain | ✅ enum BlockType (9 values) |
+| `Domain/Entities/Entity.cs` | Domain | ✅ abstract base |
+| `Domain/Entities/Air.cs` | Domain | ✅ |
+| `Domain/Entities/Block.cs` | Domain | ✅ |
+| `Domain/Entities/Wire.cs` | Domain | ✅ IPowerable + IConnectable |
+| `Domain/Entities/Lever.cs` | Domain | ✅ toggle source |
+| `Domain/Entities/Button.cs` | Domain | ✅ ITickable pulse source |
+| `Domain/Entities/RedstoneBlock.cs` | Domain | ✅ constant source |
+| `Domain/Entities/Torch.cs` | Domain | ✅ inverter |
+| `Domain/Entities/Repeater.cs` | Domain | ✅ delay amplifier |
+| `Domain/Entities/RedstoneLamp.cs` | Domain | ✅ terminal output |
+| `Domain/Interfaces/IPowerable.cs` | Domain | ✅ |
+| `Domain/Interfaces/IConnectable.cs` | Domain | ✅ |
+| `Domain/Interfaces/ITickable.cs` | Domain | ✅ |
+| `Domain/ValueObjects/Position.cs` | Domain | ✅ Move(Direction) |
+| `Domain/ValueObjects/SignalStrength.cs` | Domain | ✅ 0-15 clamped |
+| `Application/Grid/CircuitBoard.cs` | Application | ✅ Width/Height/IsInBounds/AllPositions |
+| `Application/Engine/TickSimulator.cs` | Application | ✅ BFS + torch + repeater |
+| `Infrastructure/Persistance/CircuitData.cs` | Infrastructure | ✅ DTOs |
+| `Infrastructure/Persistance/JsonCircuitRepository.cs` | Infrastructure | ✅ async Save/Load |
+| `UI/ViewModels/ViewModelBase.cs` | UI | ✅ ObservableObject |
+| `UI/ViewModels/CellViewModel.cs` | UI | ✅ Symbol/CellColor/ForeColor |
+| `UI/ViewModels/MainWindowViewModel.cs` | UI | ✅ commands + grid |
+| `UI/Views/MainWindow.axaml` | UI | ✅ grid + toolbar + status bar |
+| `UI/Views/MainWindow.axaml.cs` | UI | ✅ file picker handlers |
 
 ---
 
-## Key Files
+## Known Bugs Fixed
 
-| File | Purpose |
-|------|---------|
-| `Domain/Enums/Direction.cs` | North/East/South/West enum |
-| `Domain/Enums/Blocktype.cs` | Air/Block/Wire/Lever/RedstoneBlock/Torch/Repeater enum |
-| `Domain/Entities/*.cs` | Entity implementations |
-| `Domain/ValueObjects/Position.cs` | X/Y coordinate + Move(Direction) helper |
-| `Domain/ValueObjects/SignalStrength.cs` | Power level 0–15 (clamped) |
-| `Application/Grid/CircuitBoard.cs` | 2D Entity grid |
-| `Application/Engine/TickSimulator.cs` | BFS power propagation + repeater delays |
-| `Infrastructure/Persistance/JsonCircuitRepository.cs` | Async JSON Save/Load |
-| `UI/ViewModels/CellViewModel.cs` | Per-cell observable state (symbol, color) |
-| `UI/ViewModels/MainWindowViewModel.cs` | Main VM: grid, tools, simulation commands |
-| `UI/Views/MainWindow.axaml` | Grid UI, toolbar, simulation controls |
+| Bug | Root Cause | Fix |
+|---|---|---|
+| Wire double-decay | BFS decremented before enqueue; Wire.UpdatePower decremented again | Wire.UpdatePower now stores value directly |
+| BFS never propagated past sources | CollectSources seeded source positions; BFS only handles Wire/Lamp so sources silently dropped | CollectSources now seeds 4 NEIGHBORS of each source at power 15 |
+| Lamp never lit on last hop | Wire at power 1 enqueued lamp at power 0 → lamp.CurrentPower stays 0 | Removed lamps from BFS; added ResolveLamps() pass using MaxNeighborPower |
+| Visited HashSet blocked stronger signal | Plain Queue + HashSet: first (weaker) path marks visited, stronger path blocked | Removed HashSet; use `power <= wire.CurrentPower.Value` guard only |
+| Torch reads stale state | Torch resolved before wires settled | Two-pass: wire BFS → resolve torches → unconditional second wire BFS |
+| Torch BFS flood skipped | ResetAllPower calls UpdatePower(0) on Torch → _on=true after reset; wasPowering always true → anyChanged always false → second BFS never ran | Made torch BFS unconditional; removed conditional guard |
+| Compiled binding `$parent[Window]` | Avalonia compiled bindings don't support ancestor lookup | Each CellViewModel holds `Action<CellViewModel>` callback; `x:CompileBindings="False"` on DataTemplate |
 
 ---
 
-## Current Progress & Handoff Checklist
+## Current Progress
 
-### ✅ Completed
-- [x] CHALLENGE_PLAN.md created (this file)
+- [x] All entities implemented and compiling
+- [x] BFS tick engine working — sources flood neighbors, Torch inversion, Repeater delay, ResolveLamps pass
+- [x] JSON Save / Load functional
+- [x] Full Avalonia UI with toolbar, grid, status bar
+- [x] `dotnet build` → **0 warnings, 0 errors**
+- [x] UML split into PROJECT_USECASE.puml and PROJECT_CLASSES.puml (PROJECT_DIAGRAMS.puml is superseded)
 
-### ✅ Domain Layer
-- [x] `Direction.cs` → changed class to enum (North, East, South, West)
-- [x] `Blocktype.cs` → changed class to enum BlockType (Air, Block, Wire, Lever, RedstoneBlock, Torch, Repeater)
-- [x] `Entity.cs` → made `position` public (`public Position Position { get; set; }`)
-- [x] `Position.cs` → added `Position(int x, int y)` constructor, `Move(Direction)` method, `Equals`/`GetHashCode`
-- [x] `Wire.cs` → fixed `UpdatePower` to assign `CurrentPower = new SignalStrength(decayedPower)`
-- [x] `Repeater.cs` → fixed `CurrentPower` property, fixed `UpdatePower`, implemented `CanConnectTo`, added `Output`/`Delay` accessors
-- [x] `Torch.cs` → fully implemented (was commented out with invalid syntax)
-- [x] `Lever.cs` → added `public bool IsOn => _on`
+## Possible Future Improvements
 
-### ✅ Application Layer
-- [x] `CircuitBoard.cs` → added `Width`, `Height`, `IsInBounds(Position)`, `AllPositions()`
-- [x] `TickSimulator.cs` → implemented BFS flood fill with Torch inversion and Repeater delay queue
-
-### ✅ Infrastructure Layer
-- [x] `JsonCircuitRepository.cs` → added `CircuitData`/`CellData` DTOs; implemented `SaveAsync`/`LoadAsync`
-
-### ✅ UI Layer
-- [x] Created `CellViewModel.cs` — observable per-cell state with Symbol and CellColor computed properties
-- [x] Rewrote `MainWindowViewModel.cs` — grid ObservableCollection, tool selection, simulation commands
-- [x] Rewrote `MainWindow.axaml` — DockPanel with toolbar, grid (ItemsControl + UniformGrid), status bar
-- [x] Updated `MainWindow.axaml.cs` — file picker handlers for Save/Load
-
-### ✅ Build
-- [x] `dotnet build` passes clean (0 warnings, 0 errors)
-- [x] App launches without crashes
-
-### 🔲 Manual Testing (do these to verify)
-- [ ] Wire placement + Lever toggle → power propagates visually (red wire gradient)
-- [ ] Play/Pause/Step/Reset buttons work
-- [ ] Torch turns off when input wire is powered
-- [ ] Repeater passes signal with configurable delay (click repeater to cycle 1→4)
-- [ ] Save → JSON file created with non-Air cells only
-- [ ] Load → circuit restored from JSON
+- Pressure plate (auto-off on next tick)
+- Comparator (subtract mode / compare mode)
+- Larger/resizable grid
+- Undo/redo stack
+- Wire drag-to-paint (hold mouse button)
+- Keyboard shortcut for each tool

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RedstoneStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bec15d293abbd4bd01456f61c914cbe161a0d4d8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3233c85bd2528bcc9e8f6f1cdeea8d699945f3f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("RedstoneStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RedstoneStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
