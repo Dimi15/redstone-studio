@@ -4,9 +4,9 @@ public class Lever : Entity
 {
     private bool _on { get; set; }
 
-    public Lever()
+    public Lever(bool on = false)
     {
-        _on = false;
+        _on = on;
     }
 
     public override bool IsPowering()

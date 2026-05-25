@@ -46,6 +46,7 @@ classDiagram
         class Block
         class Lever {
             -_on bool
+            +Lever(on bool)
             +IsOn bool
             +IsPowering() bool
             +ChangeState() void
@@ -80,6 +81,7 @@ classDiagram
             +CurrentPower SignalStrength
             -_output Direction
             -_delay int
+            +Repeater(output Direction, delay int)
             +Output Direction
             +Delay int
             +IsPowering() bool
@@ -112,7 +114,7 @@ classDiagram
             +Reset() void
             -BfsFlood(seeds Queue) void
             -ResolveTorches() void
-            -ResolveRepeaters() void
+            -ResolveRepeaters() Queue
             -ResolveLamps() void
         }
     }

@@ -223,12 +223,46 @@ BfsFlood(CollectTorchSources());
 
 **Problema:** Durante il caricamento di un circuito JSON, alcuni campi opzionali (`Direction`, `Delay`, `IsOn`) erano assenti per certi tipi di entità. `System.Text.Json` produceva `NullReferenceException` quando si tentava di accedere a questi valori senza verificarne la nullabilità.
 
-**Soluzione:** Tutti i campi opzionali nei DTO sono stati dichiarati come nullable (`string?`, `int?`, `bool?`). Il metodo `ToEntity` usa l'operatore null-coalescing per fornire valori di default sicuri:
+**Soluzione:** Tutti i campi opzionali nei DTO sono stati dichiarati come nullable (`string?`, `int?`, `bool?`). Il metodo `ToEntity` usa l'operatore null-coalescing per fornire valori di default sicuri.
+
+### 4.12 Ripetitore che Non Propagava il Segnale Oltre la Prima Cella
+
+**Problema:** Quando il ritardo di un ripetitore si esauriva, il codice chiamava direttamente `w.UpdatePower(new SignalStrength(15))` sulla singola cella Wire immediatamente davanti al ripetitore e si fermava. Nessun BFS flood partiva da quella cella, quindi i fili successivi nella catena non venivano mai alimentati e la lampada in fondo al percorso rimaneva spenta.
+
+**Soluzione:** `ResolveRepeaters()` ora restituisce una `Queue<(Position, int)>` di seed BFS invece di aggiornare direttamente i fili. Ogni volta che un ritardo si esaurisce, la posizione di uscita viene accodata a potenza 15. `Tick()` poi chiama `BfsFlood(ResolveRepeaters())`, propagando il segnale attraverso l'intera catena di fili esattamente come farebbe una sorgente normale.
 
 ```csharp
-new Torch(cell.Vertical ?? true, Enum.Parse<Direction>(cell.Direction ?? "North"))
-new Repeater(Enum.Parse<Direction>(cell.Direction ?? "North"))
+// Prima (difettoso):
+private void ResolveRepeaters()
+{
+    // ...
+    var outEntity = _board.GetEntity(outPos);
+    if (outEntity is Wire w) w.UpdatePower(new SignalStrength(15)); // si ferma qui
+}
+
+// Dopo (corretto):
+private Queue<(Position, int)> ResolveRepeaters()
+{
+    // ...
+    floodSeeds.Enqueue((outPos, 15)); // BFS propaga oltre
+    // ...
+    return floodSeeds;
+}
+// In Tick():
+BfsFlood(ResolveRepeaters());
 ```
+
+### 4.13 Stato della Leva Non Ripristinato al Caricamento
+
+**Problema:** Il metodo `ToEntity` nel repository creava sempre `new Lever()`, che ha il costruttore con `_on = false`. Salvare un circuito con una leva accesa e ricaricarlo produceva una leva spenta, rendendo il caricamento inaffidabile.
+
+**Soluzione:** Il costruttore di `Lever` è stato esteso con un parametro opzionale `bool on = false`. `ToEntity` ora passa il valore salvato: `new Lever(cell.IsOn ?? false)`.
+
+### 4.14 Ritardo del Ripetitore Non Ripristinato al Caricamento
+
+**Problema:** Analogamente alla leva, `ToEntity` creava `new Repeater(dir)` ignorando il campo `Delay` salvato nel JSON. Un ripetitore con ritardo 3 tornava sempre a ritardo 1 dopo il caricamento.
+
+**Soluzione:** Il costruttore di `Repeater` è stato esteso con un parametro opzionale `int delay = 1`. `ToEntity` ora passa il valore salvato: `new Repeater(dir, cell.Delay ?? 1)`. Il valore viene anche validato con `Math.Clamp(delay, 1, 4)` nel costruttore.
 
 ---
 
@@ -401,9 +435,10 @@ Funziona esattamente come `CollectSources()`, ma filtra le torce accese invece d
 ### 5.9 `ResolveRepeaters()` — Coda di Ritardo dei Ripetitori
 
 ```csharp
-private void ResolveRepeaters()
+private Queue<(Position, int)> ResolveRepeaters()
 {
     var next = new List<(Position, Direction, int)>();
+    var floodSeeds = new Queue<(Position, int)>();
 
     // Decrementa la coda dei ripetitori in attesa
     while (_pendingRepeaters.Count > 0)
@@ -413,13 +448,10 @@ private void ResolveRepeaters()
             next.Add((pos, dir, ticksLeft - 1));
         else
         {
+            // Delay elapsed — seed a BFS flood from the output cell at full power.
             var outPos = pos.Move(dir);
             if (_board.IsInBounds(outPos))
-            {
-                var outEntity = _board.GetEntity(outPos);
-                if (outEntity is Wire w)         w.UpdatePower(new SignalStrength(15));
-                else if (outEntity is RedstoneLamp l) l.UpdatePower(new SignalStrength(15));
-            }
+                floodSeeds.Enqueue((outPos, 15));
         }
     }
 
@@ -434,11 +466,11 @@ private void ResolveRepeaters()
             var src = _board.GetEntity(inputPos);
             inputPower = src switch
             {
-                IPowerable pw          => pw.CurrentPower.Value,
-                Lever l when l.IsOn    => 15,
-                RedstoneBlock          => 15,
+                IPowerable pw              => pw.CurrentPower.Value,
+                Lever l when l.IsOn        => 15,
+                RedstoneBlock              => 15,
                 Button b when b.IsPowering() => 15,
-                _ => 0
+                _                          => 0
             };
         }
         ((IPowerable)rep).UpdatePower(new SignalStrength(inputPower));
@@ -448,14 +480,18 @@ private void ResolveRepeaters()
 
     foreach (var item in next)
         _pendingRepeaters.Enqueue(item);
+
+    return floodSeeds;
 }
 ```
 
-I ripetitori usano una coda persistente (`_pendingRepeaters`) che sopravvive tra un tick e l'altro. Ogni voce della coda è una tripla `(posizione, direzioneOutput, ticksRimanenti)`.
+I ripetitori usano una coda persistente (`_pendingRepeaters`) che sopravvive tra un tick e l'altro. Ogni voce è una tripla `(posizione, direzioneOutput, ticksRimanenti)`.
 
-La logica si divide in due parti. Nella prima parte si scorre la coda esistente: le voci con più di 1 tick rimanente vengono riaccodate con il countdown decrementato; le voci con 1 tick rimanente hanno completato il ritardo e iniettano la potenza nella cella di uscita (Wire o Lamp). Nella seconda parte si scorrono tutti i Repeater sulla griglia: si legge la potenza dalla cella di ingresso (il lato opposto all'uscita, calcolato con `Opposite(rep.Output)`), si aggiorna lo stato del ripetitore, e se sta ricevendo segnale si accoda una nuova voce con il ritardo configurato tramite `ChangeState()`.
+La logica si divide in due parti. Nella prima, si scorre la coda: le voci con più di 1 tick vengono riaccodate con il countdown decrementato; le voci con 1 tick hanno completato il ritardo e accodano `(outPos, 15)` nei seed BFS. Nella seconda parte si scorrono tutti i Repeater sulla griglia: si legge la potenza dalla cella di ingresso (lato opposto all'uscita via `Opposite(rep.Output)`), si aggiorna lo stato del ripetitore, e se sta ricevendo segnale si accoda una nuova voce con il ritardo.
 
-Il `delay` del Repeater va da 1 a 4 tick ed è ciclabile tramite `ChangeState()`, che incrementa da 1 a 4 e poi torna a 1.
+Il metodo restituisce la coda di seed BFS, che `Tick()` passa direttamente a `BfsFlood()`. Questo garantisce che il segnale si propaghi attraverso l'intera catena di fili oltre il ripetitore, e non si fermi alla prima cella adiacente.
+
+Il `delay` del Repeater va da 1 a 4 tick ed è ciclabile tramite `ChangeState()`. Il costruttore accetta ora anche un parametro `delay` opzionale per ripristinare correttamente il valore al caricamento dal JSON.
 
 ### 5.10 `ResolveLamps()` — Accensione Finale delle Lampade
 
@@ -537,7 +573,7 @@ Tutte le entità ereditano dalla classe astratta `Entity` e implementano solo le
 
 **`Wire`** implementa `IPowerable` e `IConnectable`. Memorizza `CurrentPower` come proprietà e in `UpdatePower` salva il valore ricevuto direttamente (nessun decremento interno). `CanConnectTo` restituisce sempre `true` perché i fili si connettono in tutte le direzioni.
 
-**`Lever`** è una sorgente on/off senza interfacce aggiuntive. Il campo `_on` viene invertito da `ChangeState()`. `IsOn` è esposta come proprietà pubblica per la serializzazione e per il pattern matching in `MaxNeighborPower`.
+**`Lever`** è una sorgente on/off senza interfacce aggiuntive. Il campo `_on` viene invertito da `ChangeState()`. `IsOn` è esposta come proprietà pubblica per la serializzazione. Il costruttore accetta un parametro opzionale `bool on = false` usato da `JsonCircuitRepository` per ripristinare lo stato al caricamento.
 
 **`Button`** implementa `ITickable`. Il costruttore accetta una durata dell'impulso (default 3 tick). `ChangeState()` riavvia il countdown impostando `_ticksLeft = _pulseDuration`. `IsPowering()` restituisce `true` finché `_ticksLeft > 0`. Ogni chiamata a `Tick()` decrementa il contatore.
 
@@ -551,7 +587,7 @@ public void Tick() { if (_ticksLeft > 0) _ticksLeft--; }
 
 **`Torch`** implementa `IPowerable` e `IConnectable`. Il campo `_on` è impostato nel costruttore a `true` (torcia accesa di default). `UpdatePower` implementa la logica di inversione: `_on = incomingPower.Value == 0`. `CanConnectTo` blocca il lato di montaggio per le torce a muro (`!_vertical && direction == _placement`). `CurrentPower` è una proprietà con setter privato perché `UpdatePower` deve modificarla.
 
-**`Repeater`** implementa `IPowerable` e `IConnectable`. Il campo `_output` determina la direzione di uscita. `CanConnectTo` accetta solo il lato opposto all'uscita (lato di ingresso). `UpdatePower` imposta `_on` e aggiorna `CurrentPower` a 15 se il ripetitore riceve segnale, 0 altrimenti. `ChangeState()` cicla il ritardo da 1 a 4.
+**`Repeater`** implementa `IPowerable` e `IConnectable`. Il campo `_output` determina la direzione di uscita. `CanConnectTo` accetta solo il lato opposto all'uscita (lato di ingresso). `UpdatePower` imposta `_on` e aggiorna `CurrentPower` a 15 se il ripetitore riceve segnale, 0 altrimenti. `ChangeState()` cicla il ritardo da 1 a 4. Il costruttore accetta un secondo parametro opzionale `int delay = 1`, validato con `Math.Clamp(delay, 1, 4)`, per ripristinare il ritardo al caricamento dal JSON.
 
 **`RedstoneLamp`** implementa solo `IPowerable`. È un nodo terminale: riceve segnale da `ResolveLamps()`, aggiorna `CurrentPower`, ma non propaga nulla. `IsPowered()` restituisce `true` se `CurrentPower.Value > 0`.
 
@@ -605,9 +641,9 @@ public static async Task<CircuitBoard> LoadAsync(string path)
 }
 ```
 
-`LoadAsync` esegue il percorso inverso: legge il file in modo asincrono con `File.ReadAllTextAsync`, deserializza il JSON in `CircuitData` con `JsonSerializer.Deserialize`, crea un nuovo `CircuitBoard` con le dimensioni lette dal file e richiama `ToEntity(CellData)` per ricostruire ogni entità. I campi nullable del DTO vengono gestiti con l'operatore `??` per fornire valori di default sicuri.
+`LoadAsync` esegue il percorso inverso: legge il file in modo asincrono, deserializza il JSON in `CircuitData`, crea un nuovo `CircuitBoard` e richiama `ToEntity(CellData)` per ricostruire ogni entità. I campi nullable del DTO vengono gestiti con `??` per valori di default sicuri. Lo stato della Lever (`IsOn`) e il ritardo del Repeater (`Delay`) vengono passati direttamente al costruttore, garantendo che il circuito ricaricato sia identico a quello salvato.
 
-`ToCellData()` usa un `switch` expression per mappare ogni tipo di entità nel DTO corrispondente, includendo solo i campi significativi per quel tipo:
+`ToCellData()` usa un `switch` expression per mappare ogni tipo di entità nel DTO, includendo solo i campi significativi:
 
 ```csharp
 private static CellData? ToCellData(Entity entity, Position pos) => entity switch
@@ -623,6 +659,25 @@ private static CellData? ToCellData(Entity entity, Position pos) => entity switc
     RedstoneLamp  => new CellData { X = pos.X, Y = pos.Y, Type = "RedstoneLamp" },
     Block         => new CellData { X = pos.X, Y = pos.Y, Type = "Block" },
     _             => null
+};
+```
+
+`ToEntity()` fa il percorso inverso, passando i valori salvati ai costruttori:
+
+```csharp
+private static Entity? ToEntity(CellData cell) => cell.Type switch
+{
+    "Wire"          => new Wire(),
+    "Block"         => new Block(),
+    "Lever"         => new Lever(cell.IsOn ?? false),
+    "Torch"         => new Torch(cell.Vertical ?? true,
+                           Enum.Parse<Direction>(cell.Direction ?? "North")),
+    "Repeater"      => new Repeater(Enum.Parse<Direction>(cell.Direction ?? "North"),
+                           cell.Delay ?? 1),
+    "Button"        => new Button(),
+    "RedstoneBlock" => new RedstoneBlock(),
+    "RedstoneLamp"  => new RedstoneLamp(),
+    _               => null
 };
 ```
 

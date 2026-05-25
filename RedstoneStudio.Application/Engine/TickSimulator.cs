@@ -32,7 +32,7 @@ public class TickSimulator
         ResolveTorches();
         BfsFlood(CollectTorchSources());
 
-        ResolveRepeaters();
+        BfsFlood(ResolveRepeaters());
         ResolveLamps();
     }
 
@@ -139,10 +139,12 @@ public class TickSimulator
         }
     }
 
-    // Ticks down the repeater delay queue, then enqueues new outputs for powered repeaters.
-    private void ResolveRepeaters()
+    // Ticks down the repeater delay queue, then schedules outputs for newly-powered repeaters.
+    // Returns BFS seeds so the caller can flood the signal through wires beyond the output cell.
+    private Queue<(Position, int)> ResolveRepeaters()
     {
         var next = new List<(Position, Direction, int)>();
+        var floodSeeds = new Queue<(Position, int)>();
 
         while (_pendingRepeaters.Count > 0)
         {
@@ -153,18 +155,16 @@ public class TickSimulator
             }
             else
             {
-                // Delay elapsed — emit into the output neighbor.
+                // Delay elapsed — seed a BFS flood from the output cell at full power.
+                // Using BFS (not a direct UpdatePower) ensures the signal propagates through
+                // the entire wire chain beyond the repeater, not just the first adjacent cell.
                 var outPos = pos.Move(dir);
                 if (_board.IsInBounds(outPos))
-                {
-                    var outEntity = _board.GetEntity(outPos);
-                    if (outEntity is Wire w) w.UpdatePower(new SignalStrength(15));
-                    else if (outEntity is RedstoneLamp l) l.UpdatePower(new SignalStrength(15));
-                }
+                    floodSeeds.Enqueue((outPos, 15));
             }
         }
 
-        // Enqueue new repeater outputs based on what their input side received this tick.
+        // Read each repeater's input this tick and schedule a new output if powered.
         foreach (var pos in _board.AllPositions())
         {
             if (_board.GetEntity(pos) is not Repeater rep) continue;
@@ -177,11 +177,11 @@ public class TickSimulator
                 var src = _board.GetEntity(inputPos);
                 inputPower = src switch
                 {
-                    IPowerable pw => pw.CurrentPower.Value,
-                    Lever l when l.IsOn => 15,
-                    RedstoneBlock => 15,
+                    IPowerable pw              => pw.CurrentPower.Value,
+                    Lever l when l.IsOn        => 15,
+                    RedstoneBlock              => 15,
                     Button b when b.IsPowering() => 15,
-                    _ => 0
+                    _                          => 0
                 };
             }
 
@@ -192,6 +192,8 @@ public class TickSimulator
 
         foreach (var item in next)
             _pendingRepeaters.Enqueue(item);
+
+        return floodSeeds;
     }
 
     // Returns the maximum power level among all four neighbors of a position.

@@ -18,10 +18,10 @@ public class Repeater : Entity, IPowerable, IConnectable
     /// <summary>Returns the current tick delay (1–4).</summary>
     public int Delay => _delay;
 
-    public Repeater(Direction output) : base()
+    public Repeater(Direction output, int delay = 1) : base()
     {
         _output = output;
-        _delay = 1;
+        _delay = Math.Clamp(delay, 1, 4);
         _on = false;
     }
 

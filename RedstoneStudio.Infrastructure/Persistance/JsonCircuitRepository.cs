@@ -64,13 +64,13 @@ public static class JsonCircuitRepository
     {
         "Wire"          => new Wire(),
         "Block"         => new Block(),
-        "Lever"         => new Lever(),
+        "Lever"         => new Lever(cell.IsOn ?? false),
         "Button"        => new Button(),
         "RedstoneBlock" => new RedstoneBlock(),
         "RedstoneLamp"  => new RedstoneLamp(),
         "Torch"         => new Torch(cell.Vertical ?? true,
                                Enum.Parse<Direction>(cell.Direction ?? "North")),
-        "Repeater"      => new Repeater(Enum.Parse<Direction>(cell.Direction ?? "North")),
+        "Repeater"      => new Repeater(Enum.Parse<Direction>(cell.Direction ?? "North"), cell.Delay ?? 1),
         _               => null
     };
 }

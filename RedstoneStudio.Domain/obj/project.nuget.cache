@@ -1,11 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "oW4QC99Vd/s=",
+  "dgSpecHash": "E1Xc0hAQZtc=",
   "success": true,
   "projectFilePath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/RedstoneStudio.Domain/RedstoneStudio.Domain.csproj",
-  "expectedPackageFiles": [
-    "/Users/dimi/.nuget/packages/microsoft.netcore.app.ref/8.0.23/microsoft.netcore.app.ref.8.0.23.nupkg.sha512",
-    "/Users/dimi/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.23/microsoft.aspnetcore.app.ref.8.0.23.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

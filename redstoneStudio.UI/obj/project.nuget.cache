@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ttt5sLqlVEQ=",
+  "dgSpecHash": "NV2UaR7Zw9s=",
   "success": true,
   "projectFilePath": "/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/redstoneStudio.UI.csproj",
   "expectedPackageFiles": [
@@ -35,10 +35,7 @@
     "/Users/dimi/.nuget/packages/skiasharp.nativeassets.webassembly/3.119.4-preview.1.1/skiasharp.nativeassets.webassembly.3.119.4-preview.1.1.nupkg.sha512",
     "/Users/dimi/.nuget/packages/skiasharp.nativeassets.win32/3.119.4-preview.1.1/skiasharp.nativeassets.win32.3.119.4-preview.1.1.nupkg.sha512",
     "/Users/dimi/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
-    "/Users/dimi/.nuget/packages/tmds.dbus.protocol/0.92.0/tmds.dbus.protocol.0.92.0.nupkg.sha512",
-    "/Users/dimi/.nuget/packages/microsoft.netcore.app.ref/8.0.23/microsoft.netcore.app.ref.8.0.23.nupkg.sha512",
-    "/Users/dimi/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.23/microsoft.aspnetcore.app.ref.8.0.23.nupkg.sha512",
-    "/Users/dimi/.nuget/packages/microsoft.netcore.app.host.osx-arm64/8.0.23/microsoft.netcore.app.host.osx-arm64.8.0.23.nupkg.sha512"
+    "/Users/dimi/.nuget/packages/tmds.dbus.protocol/0.92.0/tmds.dbus.protocol.0.92.0.nupkg.sha512"
   ],
   "logs": []
 }
