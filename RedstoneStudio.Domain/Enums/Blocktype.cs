@@ -1,6 +1,12 @@
 namespace redstone_stone.Domain.Enums;
 
-public class Blocktype
+public enum BlockType
 {
-    
+    Air,
+    Block,
+    Wire,
+    Lever,
+    RedstoneBlock,
+    Torch,
+    Repeater
 }

@@ -3,12 +3,11 @@
 public class RedstoneBlock : Entity
 {
 
-    public RedstoneBlock() : base(x, y)
+    public RedstoneBlock() : base()
     {}
 
-    public override IsPowering()
+    public override bool IsPowering()
     {
-
         return true;
     }
 }

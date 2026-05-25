@@ -3,18 +3,149 @@
         xmlns:vm="using:redstone_stone.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="620"
         x:Class="redstone_stone.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="redstone_stone">
+        Title="Redstone Studio"
+        Background="#111111"
+        MinWidth="700" MinHeight="540">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <DockPanel LastChildFill="True">
 
+        <!-- ═══════════════════════════ TOP TOOLBAR ═══════════════════════════ -->
+        <Border DockPanel.Dock="Top" Background="#222222" Padding="6,4">
+            <WrapPanel Orientation="Horizontal">
+
+                <!-- Block type selection -->
+                <TextBlock Text="Place:" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+
+                <Button x:Name="BtnAir"          Content="✕ Delete"     Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Air"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnWire"         Content="─ Wire"       Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Wire"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnBlock"        Content="█ Block"      Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Block"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnLever"        Content="⬛ Lever"     Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Lever"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnRedstone"     Content="R RedstoneBlock" Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="RedstoneBlock"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnTorch"        Content="¦ Torch"      Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Torch"
+                        Background="#333333" Foreground="White"/>
+                <Button x:Name="BtnRepeater"     Content="▶ Repeater"   Margin="2" Padding="6,3"
+                        Click="OnToolClicked" Tag="Repeater"
+                        Background="#333333" Foreground="White"/>
+
+                <Separator Width="1" Background="#555555" Margin="6,0"/>
+
+                <!-- Direction for Torch/Repeater placement -->
+                <TextBlock Text="Dir:" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <Button Content="▲ N" Margin="2" Padding="6,3" Click="OnDirectionClicked" Tag="North"
+                        Background="#333333" Foreground="White"/>
+                <Button Content="▶ E" Margin="2" Padding="6,3" Click="OnDirectionClicked" Tag="East"
+                        Background="#333333" Foreground="White"/>
+                <Button Content="▼ S" Margin="2" Padding="6,3" Click="OnDirectionClicked" Tag="South"
+                        Background="#333333" Foreground="White"/>
+                <Button Content="◀ W" Margin="2" Padding="6,3" Click="OnDirectionClicked" Tag="West"
+                        Background="#333333" Foreground="White"/>
+
+                <Separator Width="1" Background="#555555" Margin="6,0"/>
+
+                <!-- Current selection readout -->
+                <TextBlock VerticalAlignment="Center" Foreground="#FFD700" Margin="4,0">
+                    <Run Text="Tool: "/>
+                    <Run Text="{Binding SelectedBlockType}"/>
+                    <Run Text="  Dir: "/>
+                    <Run Text="{Binding SelectedDirection}"/>
+                </TextBlock>
+
+            </WrapPanel>
+        </Border>
+
+        <!-- ═══════════════════════════ BOTTOM STATUS BAR ════════════════════ -->
+        <Border DockPanel.Dock="Bottom" Background="#222222" Padding="6,4">
+            <DockPanel>
+
+                <!-- Tick counter -->
+                <TextBlock DockPanel.Dock="Right" Foreground="#888888"
+                           VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Run Text="Tick: "/>
+                    <Run Text="{Binding TickCount}"/>
+                </TextBlock>
+
+                <TextBlock DockPanel.Dock="Right" Text="{Binding StatusText}"
+                           Foreground="#AAAAAA" VerticalAlignment="Center" Margin="10,0"/>
+
+                <!-- Simulation controls -->
+                <WrapPanel Orientation="Horizontal">
+                    <Button Content="▶ Play"   Margin="2" Padding="8,3"
+                            Command="{Binding PlayCommand}"
+                            Background="#1A6B1A" Foreground="White"/>
+                    <Button Content="⏸ Pause"  Margin="2" Padding="8,3"
+                            Command="{Binding PauseCommand}"
+                            Background="#6B4F1A" Foreground="White"/>
+                    <Button Content="⏭ Step"   Margin="2" Padding="8,3"
+                            Command="{Binding StepCommand}"
+                            Background="#1A3B6B" Foreground="White"/>
+                    <Button Content="⏹ Reset"  Margin="2" Padding="8,3"
+                            Command="{Binding ResetCommand}"
+                            Background="#6B1A1A" Foreground="White"/>
+
+                    <Separator Width="1" Background="#555555" Margin="6,0"/>
+
+                    <Button Content="💾 Save"  Margin="2" Padding="8,3"
+                            Click="OnSaveClicked"
+                            Background="#333333" Foreground="White"/>
+                    <Button Content="📂 Load"  Margin="2" Padding="8,3"
+                            Click="OnLoadClicked"
+                            Background="#333333" Foreground="White"/>
+                </WrapPanel>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ═══════════════════════════ CIRCUIT GRID ═════════════════════════ -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Background="#111111">
+            <ItemsControl ItemsSource="{Binding Cells}" Margin="8">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="{Binding GridWidth}"
+                                     x:CompileBindings="False"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:CompileBindings="False">
+                        <Button Width="34" Height="34"
+                                Padding="0"
+                                Command="{Binding ClickCommand}"
+                                Background="{Binding CellColor}"
+                                BorderBrush="#333333"
+                                BorderThickness="0.5"
+                                CornerRadius="2"
+                                ToolTip.Tip="{Binding BlockType}">
+                            <TextBlock Text="{Binding Symbol}"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"/>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
 </Window>

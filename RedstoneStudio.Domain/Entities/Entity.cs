@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Linq.Expressions;
-using redstone_stone.Domain.ValueObjects;
+﻿using redstone_stone.Domain.ValueObjects;
 
 namespace redstone_stone.Domain.Entities;
 
 public abstract class Entity
 {
-    private Position position { get; set; }
+    public Position Position { get; set; }
 
     public Entity()
     {
-        position = new Position();
+        Position = new Position();
     }
 
     /// <summary>

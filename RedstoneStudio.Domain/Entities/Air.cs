@@ -2,5 +2,5 @@
 
 public class Air : Entity
 {
-    public Air() : base(x, y){}
+    public Air() : base(){}
 }

@@ -1,0 +1,16 @@
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/bin/Debug/net8.0/RedstoneSim.Application.deps.json
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/bin/Debug/net8.0/RedstoneSim.Application.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/bin/Debug/net8.0/RedstoneSim.Application.pdb
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/bin/Debug/net8.0/RedstoneSim.Domain.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/bin/Debug/net8.0/RedstoneSim.Domain.pdb
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.csproj.AssemblyReference.cache
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.AssemblyInfoInputs.cache
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.AssemblyInfo.cs
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.csproj.CoreCompileInputs.cache
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.sourcelink.json
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/Redstone.39EBBA19.Up2Date
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/refint/RedstoneSim.Application.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/RedstoneSim.Application.pdb
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Application/obj/Debug/net8.0/ref/RedstoneSim.Application.dll

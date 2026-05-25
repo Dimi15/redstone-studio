@@ -9,13 +9,16 @@ public class Lever : Entity
         _on = false;
     }
 
-    public override IsPowering()
+    public override bool IsPowering()
     {
         return _on;
     }
     
-    public override ChangeState()
+    public override void ChangeState()
     {
         _on = !_on;
     }
+
+    /// <summary>Returns whether the lever is currently switched on.</summary>
+    public bool IsOn => _on;
 }
