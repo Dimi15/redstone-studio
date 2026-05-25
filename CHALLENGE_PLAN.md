@@ -23,11 +23,18 @@ Entity (abstract)
 ├── Air            — empty cell, no power
 ├── Block          — solid non-conducting block
 ├── Lever          — toggles _on; IsPowering() = _on
+├── Button         — ITickable; emits power for N ticks after ChangeState(); auto-off
 ├── RedstoneBlock  — always IsPowering() = true
-├── Wire           — IPowerable; CurrentPower decays by 1 per block (0–15)
+├── Wire           — IPowerable; CurrentPower set by BFS engine (range 0–15)
 ├── Torch          — IPowerable, IConnectable; inverts: on if input=0, off if input>0
-└── Repeater       — IPowerable, IConnectable; outputs 15 if input>0, with tick delay 1–4
+├── Repeater       — IPowerable, IConnectable; outputs 15 if input>0, with tick delay 1–4
+└── RedstoneLamp   — IPowerable; lights up when powered, terminal node (no output)
 ```
+
+### Interfaces
+- `IPowerable` — `CurrentPower` property + `UpdatePower(SignalStrength)` method
+- `IConnectable` — `CanConnectTo(Direction)` method
+- `ITickable` — `Tick()` method; called once per simulator tick (for time-based entities)
 
 ### Signal Flow (one tick)
 1. Reset all Wire/Torch/Repeater CurrentPower to 0

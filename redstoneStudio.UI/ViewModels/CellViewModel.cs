@@ -16,9 +16,7 @@ public partial class CellViewModel : ViewModelBase
     [ObservableProperty] private bool _isOn;
     [ObservableProperty] private int _powerLevel;
 
-    // Delegate set by MainWindowViewModel so each cell can call back on click.
     private readonly Action<CellViewModel> _onClicked;
-
     public IRelayCommand ClickCommand { get; }
 
     public CellViewModel(int x, int y, Action<CellViewModel> onClicked)
@@ -29,14 +27,16 @@ public partial class CellViewModel : ViewModelBase
         ClickCommand = new RelayCommand(() => _onClicked(this));
     }
 
-    /// <summary>Unicode symbol displayed inside the cell.</summary>
+    // ── Display symbols (Unicode) ───────────────────────────────────────────
+
     public string Symbol => BlockType switch
     {
-        BlockType.Wire         => PowerLevel > 0 ? "─" : "·",
-        BlockType.Lever        => IsOn ? "⬛" : "⬜",
-        BlockType.RedstoneBlock=> "R",
-        BlockType.Torch        => IsOn ? "¦" : "│",
-        BlockType.Repeater     => Direction switch
+        BlockType.Wire          => PowerLevel > 0 ? "·" : "·",   // dots; color carries the info
+        BlockType.Lever         => IsOn  ? "│" : "╱",
+        BlockType.Button        => IsOn  ? "●" : "○",
+        BlockType.RedstoneBlock => "■",
+        BlockType.Torch         => IsOn  ? "↑" : "↓",
+        BlockType.Repeater      => Direction switch
         {
             Direction.North => "▲",
             Direction.East  => "▶",
@@ -44,37 +44,56 @@ public partial class CellViewModel : ViewModelBase
             Direction.West  => "◀",
             _               => "▶"
         },
-        BlockType.Block        => "█",
-        _                      => " "
+        BlockType.RedstoneLamp  => IsOn  ? "✦" : "✧",
+        BlockType.Block         => " ",
+        _                       => " "
     };
 
-    /// <summary>Background color hex string based on entity type and power level.</summary>
+    // ── Cell background colors ──────────────────────────────────────────────
+
     public string CellColor => BlockType switch
     {
-        BlockType.Block              => "#555555",
-        BlockType.Wire when PowerLevel == 0 => "#3D0000",
-        BlockType.Wire               => WireColor(PowerLevel),
-        BlockType.Lever when IsOn    => "#FFD700",
-        BlockType.Lever              => "#888888",
-        BlockType.RedstoneBlock      => "#CC0000",
-        BlockType.Torch when IsOn    => "#FF6600",
-        BlockType.Torch              => "#663300",
-        BlockType.Repeater when IsOn => "#FF4444",
-        BlockType.Repeater           => "#884444",
-        _                            => "#1A1A1A"   // Air
+        BlockType.Block              => "#4A4A4A",
+        BlockType.Wire when PowerLevel == 0 => "#2A0000",
+        BlockType.Wire               => WireRed(PowerLevel),
+        BlockType.Lever when IsOn    => "#CC9900",
+        BlockType.Lever              => "#666666",
+        BlockType.Button when IsOn   => "#DD4400",
+        BlockType.Button             => "#774422",
+        BlockType.RedstoneBlock      => "#BB0000",
+        BlockType.Torch when IsOn    => "#CC4400",
+        BlockType.Torch              => "#552200",
+        BlockType.Repeater when IsOn => "#883300",
+        BlockType.Repeater           => "#442200",
+        BlockType.RedstoneLamp when IsOn  => "#DDAA00",
+        BlockType.RedstoneLamp            => "#333300",
+        _                                 => "#181818"   // Air
     };
 
-    // Wire color interpolates from dark red (power 1) to bright red (power 15).
-    private static string WireColor(int power)
+    public string ForeColor => BlockType switch
     {
-        int r = 60 + (int)(power / 15.0 * 195);
-        return $"#{r:X2}0000";
+        BlockType.RedstoneLamp when IsOn => "#FFE860",
+        BlockType.Lever when IsOn        => "#FFE860",
+        BlockType.Torch when IsOn        => "#FF9944",
+        BlockType.Button when IsOn       => "#FFDDAA",
+        BlockType.RedstoneBlock          => "#FF6666",
+        _                                => "#DDDDDD"
+    };
+
+    // Wire power gradient: dark red (power 1) → bright red-orange (power 15).
+    private static string WireRed(int power)
+    {
+        double t = power / 15.0;
+        int r = (int)(40  + t * 215);
+        int g = (int)(0   + t * 60);
+        return $"#{r:X2}{g:X2}00";
     }
 
-    /// <summary>Raises change notifications for computed display properties after state updates.</summary>
+    /// <summary>Fires property-changed for all computed display properties at once.</summary>
     public void Refresh()
     {
         OnPropertyChanged(nameof(Symbol));
         OnPropertyChanged(nameof(CellColor));
+        OnPropertyChanged(nameof(ForeColor));
     }
 }

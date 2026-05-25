@@ -6,7 +6,9 @@ public enum BlockType
     Block,
     Wire,
     Lever,
+    Button,
     RedstoneBlock,
     Torch,
-    Repeater
+    Repeater,
+    RedstoneLamp
 }

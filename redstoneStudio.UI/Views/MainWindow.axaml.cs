@@ -16,7 +16,7 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    // ── Toolbar handlers ─────────────────────────────────────────────────────
+    // ── Toolbar ──────────────────────────────────────────────────────────────
 
     private void OnToolClicked(object? sender, RoutedEventArgs e)
     {
@@ -33,16 +33,21 @@ public partial class MainWindow : Window
         }
     }
 
+    // ── Simulation bar ───────────────────────────────────────────────────────
+
+    private void OnPlayClicked(object? sender, RoutedEventArgs e)  => Vm.PlayCommand.Execute(null);
+    private void OnPauseClicked(object? sender, RoutedEventArgs e) => Vm.PauseCommand.Execute(null);
+
     // ── File dialogs ─────────────────────────────────────────────────────────
 
     private async void OnSaveClicked(object? sender, RoutedEventArgs e)
     {
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Save Circuit",
-            DefaultExtension = "json",
+            Title             = "Save Circuit",
+            DefaultExtension  = "json",
             SuggestedFileName = "circuit",
-            FileTypeChoices = new[] { new FilePickerFileType("JSON Circuit") { Patterns = new[] { "*.json" } } }
+            FileTypeChoices   = new[] { new FilePickerFileType("JSON Circuit") { Patterns = new[] { "*.json" } } }
         });
 
         if (file is not null)
@@ -53,7 +58,7 @@ public partial class MainWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Load Circuit",
+            Title         = "Load Circuit",
             AllowMultiple = false,
             FileTypeFilter = new[] { new FilePickerFileType("JSON Circuit") { Patterns = new[] { "*.json" } } }
         });

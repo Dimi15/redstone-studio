@@ -6,7 +6,7 @@ using redstone_stone.Domain.ValueObjects;
 
 namespace redstone_stone.Application.Engine;
 
-// Manages redstone ticks and repeater delays using a BFS flood-fill algorithm.
+// Advances the redstone circuit one tick at a time using BFS flood-fill for signal propagation.
 public class TickSimulator
 {
     private readonly CircuitBoard _board;
@@ -24,66 +24,66 @@ public class TickSimulator
     {
         TickCount++;
 
+        AdvanceTickables();
         ResetAllPower();
 
+        // First flood: permanent sources (levers, redstone blocks, buttons).
         var seeds = CollectSources();
         BfsFlood(seeds);
 
-        // Run a second pass for torches — their state depends on wire power after the first flood.
-        bool anyTorchChanged = ResolveTorches();
-        if (anyTorchChanged)
-        {
-            // Re-flood so wires powered by newly-lit torches get updated.
+        // Torch pass: torches invert based on wire power, then re-flood if any changed.
+        if (ResolveTorches())
             BfsFlood(CollectTorchSources());
-        }
 
         ResolveRepeaters();
     }
 
-    /// <summary>Resets tick count and clears any pending repeater outputs.</summary>
+    /// <summary>Resets tick count and clears repeater delay queue.</summary>
     public void Reset()
     {
         TickCount = 0;
         _pendingRepeaters.Clear();
     }
 
-    // Step 1: set all powered blocks back to 0 so we can recompute from scratch.
+    // Calls Tick() on any entity that has time-based internal state (e.g. buttons).
+    private void AdvanceTickables()
+    {
+        foreach (var pos in _board.AllPositions())
+            if (_board.GetEntity(pos) is ITickable t) t.Tick();
+    }
+
+    // Sets all IPowerable blocks back to 0 before recomputing from scratch.
     private void ResetAllPower()
     {
         foreach (var pos in _board.AllPositions())
-        {
-            if (_board.GetEntity(pos) is IPowerable p)
-                p.UpdatePower(SignalStrength.Min);
-        }
+            if (_board.GetEntity(pos) is IPowerable p) p.UpdatePower(SignalStrength.Min);
     }
 
-    // Step 2: seed the BFS with every active power source that isn't a torch
-    // (torches are handled after wires settle).
+    // Collects every active power source that isn't a torch (torches are handled separately).
     private Queue<(Position, int)> CollectSources()
     {
         var queue = new Queue<(Position, int)>();
         foreach (var pos in _board.AllPositions())
         {
-            var entity = _board.GetEntity(pos);
-            if (entity is Lever or RedstoneBlock && entity.IsPowering())
+            var e = _board.GetEntity(pos);
+            if (e is (Lever or RedstoneBlock or Button) && e.IsPowering())
                 queue.Enqueue((pos, 15));
         }
         return queue;
     }
 
-    // Collect lit torches as BFS seeds (called after torch state is resolved).
+    // Collects all torches that are currently lit (used for the secondary flood pass).
     private Queue<(Position, int)> CollectTorchSources()
     {
         var queue = new Queue<(Position, int)>();
         foreach (var pos in _board.AllPositions())
-        {
             if (_board.GetEntity(pos) is Torch t && t.IsOn)
                 queue.Enqueue((pos, 15));
-        }
         return queue;
     }
 
-    // Step 3: BFS flood — power spreads from sources through wire blocks.
+    // BFS: power spreads from seeds through Wire and RedstoneLamp cells.
+    // Wires propagate further; lamps absorb power but are terminal nodes.
     private void BfsFlood(Queue<(Position pos, int power)> seeds)
     {
         var visited = new HashSet<Position>();
@@ -91,116 +91,131 @@ public class TickSimulator
         while (seeds.Count > 0)
         {
             var (current, power) = seeds.Dequeue();
-
             if (!_board.IsInBounds(current) || visited.Contains(current)) continue;
             visited.Add(current);
 
             var entity = _board.GetEntity(current);
 
-            // Wires take the highest power level they receive.
             if (entity is Wire wire)
             {
-                if (power > wire.CurrentPower.Value)
-                {
-                    wire.UpdatePower(new SignalStrength(power));
-                    if (power > 0)
+                // Wires keep the highest power they receive from any direction.
+                if (power <= wire.CurrentPower.Value) continue;
+                wire.UpdatePower(new SignalStrength(power));
+
+                if (power > 0)
+                    foreach (Direction dir in Enum.GetValues<Direction>())
                     {
-                        foreach (Direction dir in Enum.GetValues<Direction>())
-                        {
-                            var neighbor = current.Move(dir);
-                            if (_board.IsInBounds(neighbor) && !visited.Contains(neighbor))
-                                seeds.Enqueue((neighbor, power - 1));
-                        }
+                        var next = current.Move(dir);
+                        if (_board.IsInBounds(next) && !visited.Contains(next))
+                            seeds.Enqueue((next, power - 1));
                     }
-                }
+            }
+            else if (entity is RedstoneLamp lamp)
+            {
+                // Lamps light up when adjacent to powered wires but don't pass power on.
+                if (power > lamp.CurrentPower.Value)
+                    lamp.UpdatePower(new SignalStrength(power));
             }
         }
     }
 
-    // Step 4: re-evaluate every torch based on what its neighbors are now doing.
-    // Returns true if any torch changed its lit state.
+    // Re-evaluates every torch based on the current power of its four neighbors.
+    // Returns true if at least one torch changed state (triggers a re-flood).
     private bool ResolveTorches()
     {
-        bool changed = false;
+        bool anyChanged = false;
 
         foreach (var pos in _board.AllPositions())
         {
             if (_board.GetEntity(pos) is not Torch torch) continue;
 
             bool wasPowering = torch.IsPowering();
-            int maxNeighborPower = 0;
-
-            foreach (Direction dir in Enum.GetValues<Direction>())
-            {
-                var neighborPos = pos.Move(dir);
-                if (!_board.IsInBounds(neighborPos)) continue;
-
-                var neighbor = _board.GetEntity(neighborPos);
-                if (neighbor is IPowerable pw)
-                    maxNeighborPower = Math.Max(maxNeighborPower, pw.CurrentPower.Value);
-                else if (neighbor is Lever l && l.IsOn)
-                    maxNeighborPower = 15;
-                else if (neighbor is RedstoneBlock)
-                    maxNeighborPower = 15;
-            }
+            int maxNeighborPower = MaxNeighborPower(pos);
 
             ((IPowerable)torch).UpdatePower(new SignalStrength(maxNeighborPower));
 
-            if (torch.IsPowering() != wasPowering) changed = true;
+            if (torch.IsPowering() != wasPowering) anyChanged = true;
         }
 
-        return changed;
+        return anyChanged;
     }
 
-    // Step 5: tick down repeater delay queues and enqueue new repeater firings.
+    // Ticks down the repeater delay queue, then enqueues new outputs for powered repeaters.
     private void ResolveRepeaters()
     {
-        // Tick down existing pending outputs.
-        var remaining = new Queue<(Position pos, Direction dir, int ticksLeft)>();
+        var next = new List<(Position, Direction, int)>();
+
         while (_pendingRepeaters.Count > 0)
         {
             var (pos, dir, ticksLeft) = _pendingRepeaters.Dequeue();
-            if (ticksLeft - 1 > 0)
+            if (ticksLeft > 1)
             {
-                remaining.Enqueue((pos, dir, ticksLeft - 1));
+                next.Add((pos, dir, ticksLeft - 1));
             }
             else
             {
-                // Delay elapsed — emit power in the output direction.
-                var outputPos = pos.Move(dir);
-                if (_board.IsInBounds(outputPos) && _board.GetEntity(outputPos) is Wire outWire)
-                    outWire.UpdatePower(new SignalStrength(15));
+                // Delay elapsed — emit into the output neighbor.
+                var outPos = pos.Move(dir);
+                if (_board.IsInBounds(outPos))
+                {
+                    var outEntity = _board.GetEntity(outPos);
+                    if (outEntity is Wire w) w.UpdatePower(new SignalStrength(15));
+                    else if (outEntity is RedstoneLamp l) l.UpdatePower(new SignalStrength(15));
+                }
             }
         }
 
-        // Check each repeater for new input.
+        // Enqueue new repeater outputs based on what their input side received this tick.
         foreach (var pos in _board.AllPositions())
         {
             if (_board.GetEntity(pos) is not Repeater rep) continue;
 
-            Direction inputDir = Opposite(rep.Output);
-            var inputPos = pos.Move(inputDir);
-
+            var inputPos = pos.Move(Opposite(rep.Output));
             int inputPower = 0;
+
             if (_board.IsInBounds(inputPos))
             {
-                var inputEntity = _board.GetEntity(inputPos);
-                if (inputEntity is IPowerable pw) inputPower = pw.CurrentPower.Value;
-                else if (inputEntity is Lever l && l.IsOn) inputPower = 15;
-                else if (inputEntity is RedstoneBlock) inputPower = 15;
+                var src = _board.GetEntity(inputPos);
+                inputPower = src switch
+                {
+                    IPowerable pw => pw.CurrentPower.Value,
+                    Lever l when l.IsOn => 15,
+                    RedstoneBlock => 15,
+                    Button b when b.IsPowering() => 15,
+                    _ => 0
+                };
             }
 
             ((IPowerable)rep).UpdatePower(new SignalStrength(inputPower));
-
             if (rep.IsPowering())
-                remaining.Enqueue((pos, rep.Output, rep.Delay));
+                next.Add((pos, rep.Output, rep.Delay));
         }
 
-        // Refill the queue with updated state.
-        while (remaining.Count > 0)
-            _pendingRepeaters.Enqueue(remaining.Dequeue());
+        foreach (var item in next)
+            _pendingRepeaters.Enqueue(item);
     }
 
-    private static Direction Opposite(Direction d) =>
-        (Direction)(((int)d + 2) % 4);
+    // Returns the maximum power level among all four neighbors of a position.
+    private int MaxNeighborPower(Position pos)
+    {
+        int max = 0;
+        foreach (Direction dir in Enum.GetValues<Direction>())
+        {
+            var np = pos.Move(dir);
+            if (!_board.IsInBounds(np)) continue;
+            var e = _board.GetEntity(np);
+            int p = e switch
+            {
+                IPowerable pw => pw.CurrentPower.Value,
+                Lever l when l.IsOn => 15,
+                RedstoneBlock => 15,
+                Button b when b.IsPowering() => 15,
+                _ => 0
+            };
+            if (p > max) max = p;
+        }
+        return max;
+    }
+
+    private static Direction Opposite(Direction d) => (Direction)(((int)d + 2) % 4);
 }

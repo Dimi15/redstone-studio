@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RedstoneStudio.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1011d7b604a557b9c7af5f3319d30d68528c4815")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bec15d293abbd4bd01456f61c914cbe161a0d4d8")]
 [assembly: System.Reflection.AssemblyProductAttribute("RedstoneStudio.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RedstoneStudio.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
