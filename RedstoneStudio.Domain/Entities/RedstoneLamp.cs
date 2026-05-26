@@ -7,8 +7,13 @@ namespace redstone_stone.Domain.Entities;
 // Does not emit or transmit signal — it is a pure output indicator.
 public class RedstoneLamp : Entity, IPowerable
 {
-    public SignalStrength CurrentPower { get; private set; } = new SignalStrength(0);
+    public SignalStrength CurrentPower { get; private set; }
 
+    public RedstoneLamp() : base()
+    {
+        CurrentPower = new SignalStrength(0);
+    }
+    
     public override bool IsPowered()
     {
         return CurrentPower.Value > 0;

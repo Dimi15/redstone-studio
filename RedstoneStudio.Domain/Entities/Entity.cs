@@ -2,6 +2,7 @@ namespace redstone_stone.Domain.Entities;
 
 public abstract class Entity
 {
+    
     public virtual bool IsPowered()
     {
         return false;

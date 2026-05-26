@@ -12,6 +12,12 @@ public class Torch : Entity, IConnectable, IPowerable
     private readonly bool _vertical;
     private bool _on = true;
 
+    public Torch(bool vertical, Direction placement) : base()
+    {
+        _vertical = vertical;
+        _placement = placement;
+    }
+    
     public bool IsOn
     {
         get { return _on; }
@@ -25,12 +31,6 @@ public class Torch : Entity, IConnectable, IPowerable
     public bool IsVertical
     {
         get { return _vertical; }
-    }
-
-    public Torch(bool vertical, Direction placement) : base()
-    {
-        _vertical = vertical;
-        _placement = placement;
     }
 
     public override bool IsPowering()

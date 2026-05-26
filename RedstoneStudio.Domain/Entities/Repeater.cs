@@ -6,21 +6,19 @@ namespace redstone_stone.Domain.Entities;
 
 public class Repeater : Entity, IPowerable, IConnectable
 {
-    public SignalStrength CurrentPower { get; private set; } = new SignalStrength(0);
+    public SignalStrength CurrentPower { get; private set; }
 
     private Direction _output;
-    private int _delay;
     private bool _on;
 
-    public Direction Output
+    public Repeater() : base()
     {
-        get { return _output; }
+        CurrentPower = new SignalStrength(0);
     }
+    
+    public Direction Output => _output;
 
-    public int Delay
-    {
-        get { return _delay; }
-    }
+    public int Delay { get; private set; }
 
     public Repeater(Direction output, int delay = 1) : base()
     {
@@ -29,15 +27,15 @@ public class Repeater : Entity, IPowerable, IConnectable
 
         if (delay < 1)
         {
-            _delay = 1;
+            Delay = 1;
         }
         else if (delay > 4)
         {
-            _delay = 4;
+            Delay = 4;
         }
         else
         {
-            _delay = delay;
+            Delay = delay;
         }
     }
 
@@ -48,13 +46,13 @@ public class Repeater : Entity, IPowerable, IConnectable
 
     public override void ChangeState()
     {
-        if (_delay < 4)
+        if (Delay < 4)
         {
-            _delay += 1;
+            Delay += 1;
         }
         else
         {
-            _delay = 1;
+            Delay = 1;
         }
     }
 

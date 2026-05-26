@@ -11,8 +11,13 @@ namespace redstone_stone.Domain.Entities;
 /// </summary>
 public class Wire : Entity, IConnectable, IPowerable
 {
-    public SignalStrength CurrentPower { get; private set; } = new SignalStrength(0);
+    public SignalStrength CurrentPower { get; private set; }
 
+    public Wire() : base()
+    {
+        CurrentPower = new SignalStrength(0);
+    }
+    
     public bool CanConnectTo(Direction direction)
     {
         return true;

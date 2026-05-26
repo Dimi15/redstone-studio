@@ -19,8 +19,5 @@ public class Lever : Entity
         _on = !_on;
     }
 
-    public bool IsOn
-    {
-        get { return _on; }
-    }
+    public bool IsOn => _on;
 }

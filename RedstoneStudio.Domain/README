@@ -1,4 +1,0 @@
-For the group:
-
-here we define the physical rules of our project/world.
-This folder (domain) doesn't depend from any other project. This is pure C#

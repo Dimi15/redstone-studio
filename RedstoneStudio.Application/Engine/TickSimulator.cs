@@ -7,9 +7,9 @@ namespace redstone_stone.Application.Engine;
 
 // Drives one tick of the redstone simulation.
 // The class is split across three files for readability:
-//   TickSimulator.cs          — fields, Tick(), Reset()
+//   TickSimulator.cs — fields, Tick(), Reset()
 //   TickSimulator.Propagation.cs — signal collection and BFS flood
-//   TickSimulator.Resolvers.cs   — torches, repeaters, lamps
+//   TickSimulator.Resolvers.cs — torches, repeaters, lamps
 public partial class TickSimulator
 {
     private readonly CircuitBoard _board;
