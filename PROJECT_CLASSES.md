@@ -99,22 +99,14 @@ classDiagram
             +Tick() void
             +Reset() void
         }
-    }
-
-    namespace Infrastructure {
-        class JsonCircuitRepository {
-            <<static>>
-            +SaveAsync(b CircuitBoard, path string)$ Task
-            +LoadAsync(path string)$ Task~CircuitBoard~
-            +Snapshot(b CircuitBoard)$ CircuitData
-            +FromSnapshot(d CircuitData)$ CircuitBoard
-        }
-        class CircuitData {
+        class BoardSnapshot {
             +Width int
             +Height int
-            +Cells List~CellData~
+            +Cells List~CellSnapshot~
+            +Capture(b CircuitBoard)$ BoardSnapshot
+            +Restore(s BoardSnapshot)$ CircuitBoard
         }
-        class CellData {
+        class CellSnapshot {
             +X int
             +Y int
             +Type string
@@ -150,8 +142,6 @@ classDiagram
             +SelectedDirection Direction
             +IsRunning bool
             +TickCount int
-            +SaveCircuit(path string) Task
-            +LoadCircuit(path string) Task
             +HistoryBack() void
             +HistoryForward() void
         }
@@ -185,10 +175,10 @@ classDiagram
     %% Dipendenze architetturali
     CircuitBoard "1" *-- "many" Entity
     TickSimulator --> CircuitBoard
-    JsonCircuitRepository --> CircuitBoard
-    JsonCircuitRepository --> CircuitData
+    BoardSnapshot --> CircuitBoard
+    BoardSnapshot "1" *-- "many" CellSnapshot
     MainWindowViewModel --> CircuitBoard
     MainWindowViewModel --> TickSimulator
-    MainWindowViewModel --> JsonCircuitRepository
+    MainWindowViewModel --> BoardSnapshot
     MainWindowViewModel "1" *-- "many" CellViewModel
 ```

@@ -10,21 +10,13 @@ public class CircuitBoard
 {
     private readonly Entity[,] _circuitBoard;
 
-    public int Width
-    {
-        get { return _circuitBoard.GetLength(1); }
-    }
+    public int Width => _circuitBoard.GetLength(1);
 
-    public int Height
-    {
-        get { return _circuitBoard.GetLength(0); }
-    }
+    public int Height => _circuitBoard.GetLength(0);
 
     public CircuitBoard(int width, int height)
     {
-        int safeWidth = width > 0 ? width : 1;
-        int safeHeight = height > 0 ? height : 1;
-        _circuitBoard = new Entity[safeHeight, safeWidth];
+        _circuitBoard = new Entity[height, width];
 
         for (int y = 0; y < Height; y++)
         {
@@ -62,7 +54,7 @@ public class CircuitBoard
     // Returns a list of every position on the board in row-first order (top-left to bottom-right).
     public List<Position> AllPositions()
     {
-        var positions = new List<Position>();
+        List<Position> positions = new List<Position>();
         for (int y = 0; y < Height; y++)
         {
             for (int x = 0; x < Width; x++)

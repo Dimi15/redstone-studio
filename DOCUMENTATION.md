@@ -6,10 +6,10 @@
 
 **Componenti del gruppo:**
 
-- Dmytriy Kovalyshyn
-- Filippo Tognoni
-- Leonida Biondi
-- Luca Pischettola
+-   Dmytriy Kovalyshyn
+-   Filippo Tognoni
+-   Leonida Biondi
+-   Luca Pischettola
 
 ---
 
@@ -25,11 +25,11 @@
 
 ## 1. Introduzione
 
-Il progetto "Redstone Studio" è un simulatore semplificato dei circuiti redstone di Minecraft. Il redstone funziona come un filo elettrico: trasmette segnali tra componenti che si comportano da interruttori, amplificatori, invertitori e indicatori luminosi.
+Il progetto "Redstone Studio" è un simulatore semplificato dei circuiti redstone di Minecraft. La redstone funziona come un filo elettrico: trasmette segnali tra componenti che si comportano da interruttori, amplificatori, invertitori e indicatori luminosi.
 
-L'applicazione permette di posizionare componenti su una griglia, avviare la simulazione tick per tick, annullare o ripetere le modifiche e salvare o ricaricare il circuito da un file JSON.
+L'applicazione permette di posizionare componenti su una griglia, avviare la simulazione tick per tick e annullare o ripetere le modifiche alla griglia.
 
-Il progetto è sviluppato in C# con .NET 8, usando Avalonia UI per l'interfaccia grafica e il pattern MVVM. La struttura segue la Clean Architecture, con quattro layer separati: dominio, applicazione, infrastruttura e presentazione.
+Il progetto è sviluppato in C# con .NET 8, usando Avalonia UI per l'interfaccia grafica e il pattern MVVM. La struttura segue la Clean Architecture, con tre layer separati: dominio, applicazione e presentazione.
 
 ---
 
@@ -37,42 +37,41 @@ Il progetto è sviluppato in C# con .NET 8, usando Avalonia UI per l'interfaccia
 
 ### 2.1 Requisiti Funzionali
 
-| Requisito |
-| --------- |
-| L'utente può selezionare un componente dalla toolbar e posizionarlo sulla griglia. |
+| Requisito                                                                                                 |
+| --------------------------------------------------------------------------------------------------------- |
+| L'utente può selezionare un componente dalla toolbar e posizionarlo sulla griglia.                        |
 | Cliccando sulla stessa cella con lo stesso strumento, il componente cambia stato (es. accendere la leva). |
-| Lo strumento "Cancella" rimuove il componente dalla cella. |
-| I componenti orientabili (torcia, ripetitore) si posizionano nelle quattro direzioni. |
+| Lo strumento "Cancella" rimuove il componente dalla cella.                                                |
+| I componenti orientabili (torcia, ripetitore) si posizionano nelle quattro direzioni.                     |
 | Il motore di simulazione propaga correttamente segnale, inversione della torcia e ritardo del ripetitore. |
-| L'utente può avviare, mettere in pausa, avanzare di un tick e azzerare la simulazione. |
-| L'utente può annullare (Undo) e ripetere (Redo) le modifiche alla griglia. |
-| Il circuito può essere salvato su file `.json` e ricaricato. |
+| L'utente può avviare, mettere in pausa, avanzare di un tick e azzerare la simulazione.                    |
+| L'utente può annullare (Undo) e ripetere (Redo) le modifiche alla griglia.                                |
 
 ### 2.2 Requisiti Non Funzionali
 
-- Codice semplice e leggibile, senza pattern inutilmente complessi.
-- Compilazione senza errori ad ogni modifica.
-- Compatibile con Windows, macOS e Linux grazie ad Avalonia UI.
-- Ogni layer modificabile indipendentemente dagli altri.
+-   Codice semplice e leggibile, senza pattern inutilmente complessi.
+-   Compilazione senza errori ad ogni modifica.
+-   Compatibile con Windows, macOS e Linux grazie ad Avalonia UI.
+-   Ogni layer modificabile indipendentemente dagli altri.
 
 ### 2.3 Componenti Implementati
 
-| Componente    | Simbolo     | Descrizione                                                                                                          |
+| Componente    |   Simbolo   | Descrizione                                                                                                          |
 | ------------- | :---------: | -------------------------------------------------------------------------------------------------------------------- |
 | Wire          | `·` / `1–F` | Filo redstone. Trasmette il segnale con decadimento di 1 per blocco (0–15). Mostra il livello di potenza come cifra. |
-| Lever         | `╱` / `│`   | Leva on/off. Sorgente permanente finché accesa.                                                                      |
-| Button        | `○` / `●`   | Pulsante. Emette un impulso di 3 tick, poi si spegne.                                                                |
-| RedstoneBlock | `■`         | Sorgente costante a potenza 15.                                                                                      |
-| Torch         | `↑` / `↓`   | Torcia redstone. Invertitore: accesa se il suo ingresso non è alimentato.                                            |
-| Repeater      | `▲▶▼◀`      | Amplifica il segnale a 15 con ritardo da 1 a 4 tick.                                                                 |
-| RedstoneLamp  | `✧` / `✦`   | Lampada. Si illumina quando riceve segnale. Non trasmette oltre.                                                     |
-| Block         | `█`         | Blocco solido non conduttivo. Può essere attraversato dal segnale di un ripetitore.                                  |
+| Lever         |  `╱` / `│`  | Leva on/off. Sorgente permanente finché accesa.                                                                      |
+| Button        |  `○` / `●`  | Pulsante. Emette un impulso di 3 tick, poi si spegne.                                                                |
+| RedstoneBlock |     `■`     | Sorgente costante a potenza 15.                                                                                      |
+| Torch         |  `↑` / `↓`  | Torcia redstone. Invertitore: accesa se il suo ingresso non è alimentato.                                            |
+| Repeater      |  `▲▶▼◀`   | Amplifica il segnale a 15 con ritardo da 1 a 4 tick.                                                                 |
+| RedstoneLamp  |  `✧` / `✦`  | Lampada. Si illumina quando riceve segnale. Non trasmette oltre.                                                     |
+| Block         |     `█`     | Blocco solido non conduttivo. Può essere attraversato dal segnale di un ripetitore.                                  |
 
 ---
 
 ## 3. Progettazione della GUI
 
-L'interfaccia usa un tema scuro ispirato a Minecraft. La finestra è strutturata con un `DockPanel`: in cima una toolbar con gli strumenti, i controlli di direzione e i pulsanti Undo/Redo, al centro la griglia 40×20 in un `ScrollViewer`, in fondo i pulsanti di simulazione (Play, Pause, Step, Reset, Salva, Carica) e il contatore dei tick.
+L'interfaccia usa un tema scuro ispirato a Minecraft. La finestra è strutturata con un `DockPanel`: in cima una toolbar con gli strumenti, i controlli di direzione e i pulsanti Undo/Redo, al centro la griglia 40×20 in un `ScrollViewer`, in fondo i pulsanti di simulazione (Play, Pause, Step, Reset) e il contatore dei tick.
 
 La griglia usa un `ItemsControl` con `UniformGrid` a 40 colonne. Ogni cella è un `Button` di 36×36 pixel con sfondo colorato e simbolo Unicode centrato. Per evitare spazi vuoti tra le celle quando la finestra è grande, il `ItemsControl` è impostato con `HorizontalAlignment="Left"` e `VerticalAlignment="Top"`, così occupa solo lo spazio necessario.
 
@@ -128,13 +127,12 @@ Le lampade implementano l'interfaccia `IPowerable`, quindi `MaxNeighborPower()` 
 
 ### 5.1 Struttura del Progetto
 
-Il codice è diviso in quattro layer:
+Il codice è diviso in tre layer:
 
 ```
-redstoneStudio.UI              — interfaccia grafica (Avalonia, MVVM)
-RedstoneStudio.Application     — motore di simulazione (TickSimulator, CircuitBoard)
-RedstoneStudio.Domain          — entità, interfacce, value objects
-RedstoneStudio.Infrastructure  — salvataggio/caricamento JSON
+redstoneStudio.UI          — interfaccia grafica (Avalonia, MVVM)
+RedstoneStudio.Application — motore di simulazione (TickSimulator, CircuitBoard, BoardSnapshot)
+RedstoneStudio.Domain      — entità, interfacce, value objects
 ```
 
 Ogni layer dipende solo da quelli più interni. Il dominio non conosce nulla degli altri layer.
@@ -206,49 +204,33 @@ Il ripetitore usa una coda `_pendingRepeaters` che sopravvive tra un tick e l'al
 
 Tutte le entità ereditano da `Entity` e implementano solo le interfacce pertinenti:
 
-- **IPowerable** (Wire, Torch, Repeater, RedstoneLamp): `CurrentPower` e `UpdatePower()`
-- **IConnectable** (Wire, Torch, Repeater): `CanConnectTo(Direction)`
-- **ITickable** (Button): `Tick()` per il countdown
+-   **IPowerable** (Wire, Torch, Repeater, RedstoneLamp): `CurrentPower` e `UpdatePower()`
+-   **IConnectable** (Wire, Torch, Repeater): `CanConnectTo(Direction)`
+-   **ITickable** (Button): `Tick()` per il countdown
 
 `Lever` e `RedstoneBlock` sono sorgenti dirette e non implementano `IPowerable`.
 
-### 5.6 Salvataggio e Caricamento JSON
+### 5.6 Undo / Redo
 
-`JsonCircuitRepository` è una classe statica con quattro metodi: `SaveAsync`, `LoadAsync`, `Snapshot` e `FromSnapshot`. I metodi `Snapshot` e `FromSnapshot` operano direttamente su oggetti `CircuitData` in memoria, senza toccare il disco; `SaveAsync` e `LoadAsync` li avvolgono aggiungendo soltanto la lettura/scrittura del file.
-
-Questa separazione serve anche per la funzione undo/redo: ogni modifica alla griglia salva uno snapshot `CircuitData` nello stack di annullamento, senza scrivere nulla su file.
-
-Vengono serializzate solo le celle non-Air, includendo i parametri specifici per tipo:
-
-```csharp
-private static CellData? ToCellData(Entity entity, Position pos)
-{
-    if (entity is Lever l)
-    {
-        return new CellData { X = pos.X, Y = pos.Y, Type = "Lever", IsOn = l.IsOn };
-    }
-    if (entity is Repeater r)
-    {
-        return new CellData
-        {
-            X = pos.X, Y = pos.Y, Type = "Repeater",
-            Direction = r.Output.ToString(), Delay = r.Delay
-        };
-    }
-    // ... altri tipi ...
-    return null;
-}
-```
-
-Al caricamento, ogni `CellData` viene riconvertito nell'entità corrispondente con i valori salvati (stato della leva, ritardo del ripetitore, ecc.).
-
-### 5.7 Undo / Redo
-
-Il `MainWindowViewModel` mantiene due stack di `CircuitData`: `_undoStack` per annullare e `_redoStack` per ripetere. Prima di ogni modifica alla griglia, lo stato corrente viene salvato in `_undoStack` e `_redoStack` viene svuotato. Lo stack è limitato a 50 voci per evitare un uso eccessivo della memoria.
+Il `MainWindowViewModel` mantiene due stack di `BoardSnapshot`: `_undoStack` per annullare e `_redoStack` per ripetere. `BoardSnapshot` è una classe nel layer Application che cattura lo stato della griglia come lista di `CellSnapshot` (tipo, posizione, parametri specifici di ogni entità). Prima di ogni modifica alla griglia, lo stato corrente viene salvato in `_undoStack` e `_redoStack` viene svuotato. Lo stack è limitato a 50 voci.
 
 I pulsanti "↩ Undo" e "↪ Redo" nella toolbar si abilitano e disabilitano automaticamente in base alla presenza di voci nei rispettivi stack.
 
-### 5.8 Interfaccia Grafica
+```csharp
+private void OnCellClicked(CellViewModel cell)
+{
+    // Snapshot dello stato corrente prima di ogni modifica
+    _undoStack.Add(BoardSnapshot.Capture(_board));
+    _redoStack.Clear();
+    if (_undoStack.Count > 50)
+    {
+        _undoStack.RemoveAt(0);
+    }
+    // ... applica la modifica ...
+}
+```
+
+### 5.7 Interfaccia Grafica
 
 Il `MainWindowViewModel` collega la simulazione alla UI. Gestisce la `ObservableCollection<CellViewModel>` che rappresenta la griglia. Cliccando una cella si verifica uno di tre casi: rimuovere (strumento Cancella), cambiare stato (stessa entità già presente) o posizionare un nuovo componente.
 

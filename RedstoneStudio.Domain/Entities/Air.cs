@@ -2,5 +2,7 @@
 
 public class Air : Entity
 {
-    public Air() : base(){}
+    public Air() : base()
+    {
+    }
 }

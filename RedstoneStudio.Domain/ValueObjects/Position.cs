@@ -7,7 +7,9 @@ public class Position
     public int X { get; set; }
     public int Y { get; set; }
 
-    public Position() { }
+    public Position()
+    {
+    }
 
     public Position(int x, int y)
     {
@@ -21,9 +23,9 @@ public class Position
         {
             case Direction.North: return new Position(X, Y - 1);
             case Direction.South: return new Position(X, Y + 1);
-            case Direction.West:  return new Position(X - 1, Y);
-            case Direction.East:  return new Position(X + 1, Y);
-            default:              return new Position(X, Y);
+            case Direction.West: return new Position(X - 1, Y);
+            case Direction.East: return new Position(X + 1, Y);
+            default: return new Position(X, Y);
         }
     }
 
@@ -33,6 +35,7 @@ public class Position
         {
             return p.X == X && p.Y == Y;
         }
+
         return false;
     }
 

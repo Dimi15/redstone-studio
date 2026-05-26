@@ -21,11 +21,6 @@ flowchart LR
             UC10(["Step singolo"])
             UC11(["Reset griglia"])
         end
-
-        subgraph File
-            UC12(["Salva circuito (JSON)"])
-            UC13(["Carica circuito (JSON)"])
-        end
     end
 
     U --> UC1
@@ -39,8 +34,6 @@ flowchart LR
     U --> UC9
     U --> UC10
     U --> UC11
-    U --> UC12
-    U --> UC13
 
     UC2 -. "«include»" .-> UC1
     UC3 -. "«include»" .-> UC1

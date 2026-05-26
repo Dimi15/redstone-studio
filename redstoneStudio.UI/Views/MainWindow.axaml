@@ -101,9 +101,6 @@
                             Margin="3,1" Padding="10,4"/>
                     <Button Content="⏹  Reset"  Command="{Binding ResetCommand}"
                             Margin="3,1" Padding="10,4"/>
-                    <Separator Width="1" Background="#333" Margin="8,0"/>
-                    <Button Content="💾 Save"   Click="OnSaveClicked"  Margin="3,1" Padding="10,4"/>
-                    <Button Content="📂 Load"   Click="OnLoadClicked"  Margin="3,1" Padding="10,4"/>
                 </WrapPanel>
             </DockPanel>
         </Border>

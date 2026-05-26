@@ -8,7 +8,17 @@ public class SignalStrength
 
     public SignalStrength(int value)
     {
-        // Enforce the 0-15 boundary rule with clamping
-        Value = Math.Clamp(value, 0, 15);
+        if (value < 0)
+        {
+            Value = 0;
+        }
+        else if (value > 15)
+        {
+            Value = 15;
+        }
+        else
+        {
+            Value = value;
+        }
     }
 }

@@ -31,67 +31,25 @@ public partial class CellViewModel : ViewModelBase
         _onClicked(this);
     }
 
-    // ── Display symbol shown inside each cell ───────────────────────────────
+    // These three properties exist only so Avalonia can bind to them by name
+    // All logic lives in the Get* methods below
 
     public string Symbol
     {
-        get
-        {
-            switch (BlockType)
-            {
-                case BlockType.Wire:          return WireSymbol(PowerLevel);
-                case BlockType.Lever:         return IsOn ? "│" : "╱";
-                case BlockType.Button:        return IsOn ? "●" : "○";
-                case BlockType.RedstoneBlock: return "■";
-                case BlockType.Torch:         return IsOn ? "↑" : "↓";
-                case BlockType.Repeater:      return RepeaterSymbol(Direction);
-                case BlockType.RedstoneLamp:  return IsOn ? "✦" : "✧";
-                default:                      return " ";
-            }
-        }
+        get { return GetSymbol(); }
     }
-
-    // ── Cell background color ───────────────────────────────────────────────
 
     public string CellColor
     {
-        get
-        {
-            if (BlockType == BlockType.Block)        return "#4A4A4A";
-            if (BlockType == BlockType.RedstoneBlock) return "#BB0000";
-
-            if (BlockType == BlockType.Wire)
-            {
-                if (PowerLevel == 0) return "#2A0000";
-                return WireRed(PowerLevel);
-            }
-
-            if (BlockType == BlockType.Lever)       return IsOn ? "#CC9900" : "#666666";
-            if (BlockType == BlockType.Button)      return IsOn ? "#DD4400" : "#774422";
-            if (BlockType == BlockType.Torch)       return IsOn ? "#CC4400" : "#552200";
-            if (BlockType == BlockType.Repeater)    return IsOn ? "#883300" : "#442200";
-            if (BlockType == BlockType.RedstoneLamp) return IsOn ? "#DDAA00" : "#333300";
-
-            return "#181818"; // Air
-        }
+        get { return GetCellColor(); }
     }
-
-    // ── Text color for the symbol ───────────────────────────────────────────
 
     public string ForeColor
     {
-        get
-        {
-            if (BlockType == BlockType.RedstoneLamp && IsOn) return "#FFE860";
-            if (BlockType == BlockType.Lever && IsOn)        return "#FFE860";
-            if (BlockType == BlockType.Torch && IsOn)        return "#FF9944";
-            if (BlockType == BlockType.Button && IsOn)       return "#FFDDAA";
-            if (BlockType == BlockType.RedstoneBlock)        return "#FF6666";
-            return "#DDDDDD";
-        }
+        get { return GetForeColor(); }
     }
 
-    // Notifies Avalonia to re-read the three computed display properties.
+    // Notifies Avalonia to re-read the three computed display properties
     public void Refresh()
     {
         OnPropertyChanged(nameof(Symbol));
@@ -99,36 +57,239 @@ public partial class CellViewModel : ViewModelBase
         OnPropertyChanged(nameof(ForeColor));
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
-
-    // Shows the signal strength as a single character:
-    // 0 → "·" (no signal), 1–9 → "1"–"9", 10–15 → "A"–"F".
-    private static string WireSymbol(int power)
+    // Returns the Unicode symbol to display inside the cell
+    private string GetSymbol()
     {
-        if (power <= 0) return "·";
-        if (power < 10) return power.ToString();
-        return ((char)('A' + power - 10)).ToString();
-    }
-
-    // Maps a direction to the matching arrow symbol for repeaters.
-    private static string RepeaterSymbol(Direction dir)
-    {
-        switch (dir)
+        switch (BlockType)
         {
-            case Direction.North: return "▲";
-            case Direction.East:  return "▶";
-            case Direction.South: return "▼";
-            case Direction.West:  return "◀";
-            default:              return "▶";
+            case BlockType.Wire:
+                return GetWireSymbol(PowerLevel);
+
+            case BlockType.Lever:
+                if (IsOn)
+                {
+                    return "│";
+                }
+                else
+                {
+                    return "╱";
+                }
+
+            case BlockType.Button:
+                if (IsOn)
+                {
+                    return "●";
+                }
+                else
+                {
+                    return "○";
+                }
+
+            case BlockType.RedstoneBlock:
+                return "■";
+
+            case BlockType.Torch:
+                if (IsOn)
+                {
+                    return "↑";
+                }
+                else
+                {
+                    return "↓";
+                }
+
+            case BlockType.Repeater:
+                return GetRepeaterSymbol(Direction);
+
+            case BlockType.RedstoneLamp:
+                if (IsOn)
+                {
+                    return "✦";
+                }
+                else
+                {
+                    return "✧";
+                }
+
+            default:
+                return " ";
         }
     }
 
-    // Wire color: dark red at low power, bright red-orange at full power (15).
-    private static string WireRed(int power)
+    // Returns the background color hex string for the cell
+    private string GetCellColor()
     {
-        double t = power / 15.0;
-        int r = (int)(40 + t * 215);
-        int g = (int)(0  + t * 60);
-        return $"#{r:X2}{g:X2}00";
+        if (BlockType == BlockType.Block)
+        {
+            return "#4A4A4A";
+        }
+
+        if (BlockType == BlockType.RedstoneBlock)
+        {
+            return "#BB0000";
+        }
+
+        if (BlockType == BlockType.Wire)
+        {
+            if (PowerLevel == 0)
+            {
+                return "#2A0000";
+            }
+
+            return GetWireRed(PowerLevel);
+        }
+
+        if (BlockType == BlockType.Lever)
+        {
+            if (IsOn)
+            {
+                return "#CC9900";
+            }
+            else
+            {
+                return "#666666";
+            }
+        }
+
+        if (BlockType == BlockType.Button)
+        {
+            if (IsOn)
+            {
+                return "#DD4400";
+            }
+            else
+            {
+                return "#774422";
+            }
+        }
+
+        if (BlockType == BlockType.Torch)
+        {
+            if (IsOn)
+            {
+                return "#CC4400";
+            }
+            else
+            {
+                return "#552200";
+            }
+        }
+
+        if (BlockType == BlockType.Repeater)
+        {
+            if (IsOn)
+            {
+                return "#883300";
+            }
+            else
+            {
+                return "#442200";
+            }
+        }
+
+        if (BlockType == BlockType.RedstoneLamp)
+        {
+            if (IsOn)
+            {
+                return "#DDAA00";
+            }
+            else
+            {
+                return "#333300";
+            }
+        }
+
+        return "#181818"; // Air
+    }
+
+    // Returns the foreground (text) color hex string for the cell symbol
+    private string GetForeColor()
+    {
+        if (BlockType == BlockType.RedstoneLamp)
+        {
+            if (IsOn)
+            {
+                return "#FFE860";
+            }
+        }
+
+        if (BlockType == BlockType.Lever)
+        {
+            if (IsOn)
+            {
+                return "#FFE860";
+            }
+        }
+
+        if (BlockType == BlockType.Torch)
+        {
+            if (IsOn)
+            {
+                return "#FF9944";
+            }
+        }
+
+        if (BlockType == BlockType.Button)
+        {
+            if (IsOn)
+            {
+                return "#FFDDAA";
+            }
+        }
+
+        if (BlockType == BlockType.RedstoneBlock)
+        {
+            return "#FF6666";
+        }
+
+        return "#DDDDDD";
+    }
+
+    // Shows the signal strength as a single character:
+    // 0 → "·" (no signal), 1–9 → "1"–"9", 10–15 → "A"–"F"
+    private static string GetWireSymbol(int power)
+    {
+        if (power <= 0)
+        {
+            return "·";
+        }
+
+        if (power < 10)
+        {
+            return power.ToString();
+        }
+
+        int charOffset = power - 10;
+        char hexChar = (char)('A' + charOffset);
+        return hexChar.ToString();
+    }
+
+    // Maps a direction to the matching arrow symbol for repeaters
+    private static string GetRepeaterSymbol(Direction dir)
+    {
+        switch (dir)
+        {
+            case Direction.North:
+                return "▲";
+            case Direction.East:
+                return "▶";
+            case Direction.South:
+                return "▼";
+            case Direction.West:
+                return "◀";
+            default:
+                return "▶";
+        }
+    }
+
+    // Wire color: dark red at low power, bright red-orange at full power (15)
+    private static string GetWireRed(int power)
+    {
+        double ratio = power / 15.0;
+        int red = (int)(40 + ratio * 215);
+        int green = (int)(0 + ratio * 60);
+        string redHex = red.ToString("X2");
+        string greenHex = green.ToString("X2");
+        return "#" + redHex + greenHex + "00";
     }
 }

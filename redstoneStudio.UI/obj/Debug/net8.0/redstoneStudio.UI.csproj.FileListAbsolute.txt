@@ -180,9 +180,7 @@
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/runtimes/win-x86/native/libSkiaSharp.pdb
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Application.dll
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Domain.dll
-/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Infrastructure.dll
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Application.pdb
-/Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Infrastructure.pdb
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/bin/Debug/net8.0/RedstoneStudio.Domain.pdb
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/obj/Debug/net8.0/redstoneStudio.UI.csproj.AssemblyReference.cache
 /Users/dimi/Developer/School/Informatica/redstoneStudio/redstoneStudio.UI/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache

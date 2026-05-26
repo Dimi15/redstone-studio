@@ -25,8 +25,20 @@ public class Repeater : Entity, IPowerable, IConnectable
     public Repeater(Direction output, int delay = 1) : base()
     {
         _output = output;
-        _delay  = Math.Clamp(delay, 1, 4);
-        _on     = false;
+        _on = false;
+
+        if (delay < 1)
+        {
+            _delay = 1;
+        }
+        else if (delay > 4)
+        {
+            _delay = 4;
+        }
+        else
+        {
+            _delay = delay;
+        }
     }
 
     public override bool IsPowering()
@@ -38,7 +50,7 @@ public class Repeater : Entity, IPowerable, IConnectable
     {
         if (_delay < 4)
         {
-            _delay = _delay + 1;
+            _delay += 1;
         }
         else
         {
@@ -48,16 +60,39 @@ public class Repeater : Entity, IPowerable, IConnectable
 
     void IPowerable.UpdatePower(SignalStrength incomingPower)
     {
-        _on = incomingPower.Value > 0;
-        CurrentPower = new SignalStrength(_on ? 15 : 0);
+        if (incomingPower.Value > 0)
+        {
+            _on = true;
+        }
+        else
+        {
+            _on = false;
+        }
+
+        if (_on)
+        {
+            CurrentPower = new SignalStrength(15);
+        }
+        else
+        {
+            CurrentPower = new SignalStrength(0);
+        }
     }
 
     bool IConnectable.CanConnectTo(Direction direction)
     {
-        if (_output == Direction.North) return direction == Direction.South;
-        if (_output == Direction.East)  return direction == Direction.West;
-        if (_output == Direction.South) return direction == Direction.North;
-        if (_output == Direction.West)  return direction == Direction.East;
-        return false;
+        switch (_output)
+        {
+            case Direction.North:
+                return direction == Direction.South;
+            case Direction.East:
+                return direction == Direction.West;
+            case Direction.South:
+                return direction == Direction.North;
+            case Direction.West:
+                return direction == Direction.East;
+            default:
+                return false;
+        }
     }
 }

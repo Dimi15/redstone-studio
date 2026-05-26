@@ -14,8 +14,7 @@
           "Avalonia.Themes.Fluent": "12.0.2",
           "AvaloniaUI.DiagnosticsSupport": "2.2.1",
           "CommunityToolkit.Mvvm": "8.4.1",
-          "RedstoneStudio.Application": "1.0.0",
-          "RedstoneStudio.Infrastructure": "1.0.0"
+          "RedstoneStudio.Application": "1.0.0"
         },
         "runtime": {
           "redstoneStudio.UI.dll": {}
@@ -567,17 +566,6 @@
             "fileVersion": "1.0.0.0"
           }
         }
-      },
-      "RedstoneStudio.Infrastructure/1.0.0": {
-        "dependencies": {
-          "RedstoneStudio.Application": "1.0.0"
-        },
-        "runtime": {
-          "RedstoneStudio.Infrastructure.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
       }
     }
   },
@@ -796,11 +784,6 @@
       "sha512": ""
     },
     "RedstoneStudio.Domain/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "RedstoneStudio.Infrastructure/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
