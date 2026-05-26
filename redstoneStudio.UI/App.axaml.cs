@@ -1,9 +1,9 @@
+using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
-using System.Linq;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using redstone_stone.ViewModels;
 using redstone_stone.Views;
 
@@ -20,10 +20,25 @@ public partial class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var window = new MainWindow
             {
                 DataContext = new MainWindowViewModel(),
             };
+
+            // Load the icon explicitly before showing the window.
+            // On macOS this ensures the dock icon is set correctly by Avalonia
+            // before NSApplication processes its event loop.
+            try
+            {
+                using var stream = AssetLoader.Open(new Uri("avares://redstoneStudio.UI/icon/redstone.png"));
+                window.Icon = new WindowIcon(stream);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Could not load app icon: " + ex.Message);
+            }
+
+            desktop.MainWindow = window;
         }
 
         base.OnFrameworkInitializationCompleted();

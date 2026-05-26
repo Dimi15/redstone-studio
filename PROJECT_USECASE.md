@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    U(["👤 Utente"])
+    U(["Utente"])
 
     subgraph RS["Redstone Studio"]
         subgraph Editor
@@ -11,18 +11,20 @@ flowchart LR
             UC3(["Rimuovi Componente"])
             UC4(["Cambia Stato"])
             UC5(["Imposta Direzione"])
+            UC6(["Annulla modifica (Undo)"])
+            UC7(["Ripeti modifica (Redo)"])
         end
 
         subgraph Simulazione
-            UC6(["Avvia simulazione"])
-            UC7(["Pausa"])
-            UC8(["Step singolo"])
-            UC9(["Reset griglia"])
+            UC8(["Avvia simulazione"])
+            UC9(["Pausa"])
+            UC10(["Step singolo"])
+            UC11(["Reset griglia"])
         end
 
         subgraph File
-            UC10(["Salva circuito (JSON)"])
-            UC11(["Carica circuito (JSON)"])
+            UC12(["Salva circuito (JSON)"])
+            UC13(["Carica circuito (JSON)"])
         end
     end
 
@@ -37,11 +39,17 @@ flowchart LR
     U --> UC9
     U --> UC10
     U --> UC11
+    U --> UC12
+    U --> UC13
 
     UC2 -. "«include»" .-> UC1
     UC3 -. "«include»" .-> UC1
     UC4 -. "«extend»" .-> UC2
+    UC9 -. "«extend»" .-> UC8
+    UC6 -. "«extend»" .-> UC2
+    UC6 -. "«extend»" .-> UC3
     UC7 -. "«extend»" .-> UC6
 ```
 
-> **Nota:** `ChangeState()` si comporta diversamente in base al componente selezionato — Lever: toggle on/off — Button: avvia impulso — Repeater: cicla il delay da 1 a 4
+> **Nota:** `ChangeState()` si comporta diversamente in base al componente selezionato — Lever: toggle on/off — Button: avvia impulso — Repeater: cicla il delay da 1 a 4.
+> Undo e Redo operano solo sulle modifiche alla griglia (piazzamento/rimozione/stato), non sullo stato della simulazione.

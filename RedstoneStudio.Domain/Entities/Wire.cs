@@ -13,7 +13,10 @@ public class Wire : Entity, IConnectable, IPowerable
 {
     public SignalStrength CurrentPower { get; private set; } = new SignalStrength(0);
 
-    public bool CanConnectTo(Direction direction) => true;
+    public bool CanConnectTo(Direction direction)
+    {
+        return true;
+    }
 
     public void UpdatePower(SignalStrength incomingPower)
     {

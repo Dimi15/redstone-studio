@@ -5,7 +5,6 @@ using redstone_stone.Domain.Enums;
 
 namespace redstone_stone.ViewModels;
 
-/// <summary>Observable state for a single cell on the circuit grid.</summary>
 public partial class CellViewModel : ViewModelBase
 {
     public int X { get; }
@@ -24,76 +23,112 @@ public partial class CellViewModel : ViewModelBase
         X = x;
         Y = y;
         _onClicked = onClicked;
-        ClickCommand = new RelayCommand(() => _onClicked(this));
+        ClickCommand = new RelayCommand(ExecuteClick);
     }
 
-    // ── Display symbols (Unicode) ───────────────────────────────────────────
-
-    public string Symbol => BlockType switch
+    private void ExecuteClick()
     {
-        BlockType.Wire          => PowerLevel > 0 ? "·" : "·",   // dots; color carries the info
-        BlockType.Lever         => IsOn  ? "│" : "╱",
-        BlockType.Button        => IsOn  ? "●" : "○",
-        BlockType.RedstoneBlock => "■",
-        BlockType.Torch         => IsOn  ? "↑" : "↓",
-        BlockType.Repeater      => Direction switch
+        _onClicked(this);
+    }
+
+    // ── Display symbol shown inside each cell ───────────────────────────────
+
+    public string Symbol
+    {
+        get
         {
-            Direction.North => "▲",
-            Direction.East  => "▶",
-            Direction.South => "▼",
-            Direction.West  => "◀",
-            _               => "▶"
-        },
-        BlockType.RedstoneLamp  => IsOn  ? "✦" : "✧",
-        BlockType.Block         => " ",
-        _                       => " "
-    };
-
-    // ── Cell background colors ──────────────────────────────────────────────
-
-    public string CellColor => BlockType switch
-    {
-        BlockType.Block              => "#4A4A4A",
-        BlockType.Wire when PowerLevel == 0 => "#2A0000",
-        BlockType.Wire               => WireRed(PowerLevel),
-        BlockType.Lever when IsOn    => "#CC9900",
-        BlockType.Lever              => "#666666",
-        BlockType.Button when IsOn   => "#DD4400",
-        BlockType.Button             => "#774422",
-        BlockType.RedstoneBlock      => "#BB0000",
-        BlockType.Torch when IsOn    => "#CC4400",
-        BlockType.Torch              => "#552200",
-        BlockType.Repeater when IsOn => "#883300",
-        BlockType.Repeater           => "#442200",
-        BlockType.RedstoneLamp when IsOn  => "#DDAA00",
-        BlockType.RedstoneLamp            => "#333300",
-        _                                 => "#181818"   // Air
-    };
-
-    public string ForeColor => BlockType switch
-    {
-        BlockType.RedstoneLamp when IsOn => "#FFE860",
-        BlockType.Lever when IsOn        => "#FFE860",
-        BlockType.Torch when IsOn        => "#FF9944",
-        BlockType.Button when IsOn       => "#FFDDAA",
-        BlockType.RedstoneBlock          => "#FF6666",
-        _                                => "#DDDDDD"
-    };
-
-    // Wire power gradient: dark red (power 1) → bright red-orange (power 15).
-    private static string WireRed(int power)
-    {
-        double t = power / 15.0;
-        int r = (int)(40  + t * 215);
-        int g = (int)(0   + t * 60);
-        return $"#{r:X2}{g:X2}00";
+            switch (BlockType)
+            {
+                case BlockType.Wire:          return WireSymbol(PowerLevel);
+                case BlockType.Lever:         return IsOn ? "│" : "╱";
+                case BlockType.Button:        return IsOn ? "●" : "○";
+                case BlockType.RedstoneBlock: return "■";
+                case BlockType.Torch:         return IsOn ? "↑" : "↓";
+                case BlockType.Repeater:      return RepeaterSymbol(Direction);
+                case BlockType.RedstoneLamp:  return IsOn ? "✦" : "✧";
+                default:                      return " ";
+            }
+        }
     }
 
-    /// <summary>Fires property-changed for all computed display properties at once.</summary>
+    // ── Cell background color ───────────────────────────────────────────────
+
+    public string CellColor
+    {
+        get
+        {
+            if (BlockType == BlockType.Block)        return "#4A4A4A";
+            if (BlockType == BlockType.RedstoneBlock) return "#BB0000";
+
+            if (BlockType == BlockType.Wire)
+            {
+                if (PowerLevel == 0) return "#2A0000";
+                return WireRed(PowerLevel);
+            }
+
+            if (BlockType == BlockType.Lever)       return IsOn ? "#CC9900" : "#666666";
+            if (BlockType == BlockType.Button)      return IsOn ? "#DD4400" : "#774422";
+            if (BlockType == BlockType.Torch)       return IsOn ? "#CC4400" : "#552200";
+            if (BlockType == BlockType.Repeater)    return IsOn ? "#883300" : "#442200";
+            if (BlockType == BlockType.RedstoneLamp) return IsOn ? "#DDAA00" : "#333300";
+
+            return "#181818"; // Air
+        }
+    }
+
+    // ── Text color for the symbol ───────────────────────────────────────────
+
+    public string ForeColor
+    {
+        get
+        {
+            if (BlockType == BlockType.RedstoneLamp && IsOn) return "#FFE860";
+            if (BlockType == BlockType.Lever && IsOn)        return "#FFE860";
+            if (BlockType == BlockType.Torch && IsOn)        return "#FF9944";
+            if (BlockType == BlockType.Button && IsOn)       return "#FFDDAA";
+            if (BlockType == BlockType.RedstoneBlock)        return "#FF6666";
+            return "#DDDDDD";
+        }
+    }
+
+    // Notifies Avalonia to re-read the three computed display properties.
     public void Refresh()
     {
         OnPropertyChanged(nameof(Symbol));
         OnPropertyChanged(nameof(CellColor));
         OnPropertyChanged(nameof(ForeColor));
+    }
+
+    // ── Private helpers ─────────────────────────────────────────────────────
+
+    // Shows the signal strength as a single character:
+    // 0 → "·" (no signal), 1–9 → "1"–"9", 10–15 → "A"–"F".
+    private static string WireSymbol(int power)
+    {
+        if (power <= 0) return "·";
+        if (power < 10) return power.ToString();
+        return ((char)('A' + power - 10)).ToString();
+    }
+
+    // Maps a direction to the matching arrow symbol for repeaters.
+    private static string RepeaterSymbol(Direction dir)
+    {
+        switch (dir)
+        {
+            case Direction.North: return "▲";
+            case Direction.East:  return "▶";
+            case Direction.South: return "▼";
+            case Direction.West:  return "◀";
+            default:              return "▶";
+        }
+    }
+
+    // Wire color: dark red at low power, bright red-orange at full power (15).
+    private static string WireRed(int power)
+    {
+        double t = power / 15.0;
+        int r = (int)(40 + t * 215);
+        int g = (int)(0  + t * 60);
+        return $"#{r:X2}{g:X2}00";
     }
 }

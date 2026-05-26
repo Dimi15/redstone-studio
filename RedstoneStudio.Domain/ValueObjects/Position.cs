@@ -2,7 +2,6 @@ using redstone_stone.Domain.Enums;
 
 namespace redstone_stone.Domain.ValueObjects;
 
-// Like X, Y
 public class Position
 {
     public int X { get; set; }
@@ -16,18 +15,29 @@ public class Position
         Y = y;
     }
 
-    /// <summary>
-    /// Returns the neighboring position one step in the given direction.
-    /// </summary>
-    public Position Move(Direction direction) => direction switch
+    public Position Move(Direction direction)
     {
-        Direction.North => new Position(X, Y - 1),
-        Direction.South => new Position(X, Y + 1),
-        Direction.West  => new Position(X - 1, Y),
-        Direction.East  => new Position(X + 1, Y),
-        _               => new Position(X, Y)
-    };
+        switch (direction)
+        {
+            case Direction.North: return new Position(X, Y - 1);
+            case Direction.South: return new Position(X, Y + 1);
+            case Direction.West:  return new Position(X - 1, Y);
+            case Direction.East:  return new Position(X + 1, Y);
+            default:              return new Position(X, Y);
+        }
+    }
 
-    public override bool Equals(object? obj) => obj is Position p && p.X == X && p.Y == Y;
-    public override int GetHashCode() => HashCode.Combine(X, Y);
+    public override bool Equals(object? obj)
+    {
+        if (obj is Position p)
+        {
+            return p.X == X && p.Y == Y;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
 }

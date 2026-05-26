@@ -21,22 +21,33 @@ public partial class MainWindow : Window
     private void OnToolClicked(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string tag)
+        {
             Vm.SelectToolCommand.Execute(tag);
+        }
     }
 
     private void OnDirectionClicked(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is string tag &&
-            Enum.TryParse<Direction>(tag, out var dir))
+        if (sender is Button btn && btn.Tag is string tag)
         {
-            Vm.SelectedDirection = dir;
+            if (Enum.TryParse<Direction>(tag, out var dir))
+            {
+                Vm.SelectedDirection = dir;
+            }
         }
     }
 
     // ── Simulation bar ───────────────────────────────────────────────────────
 
-    private void OnPlayClicked(object? sender, RoutedEventArgs e)  => Vm.PlayCommand.Execute(null);
-    private void OnPauseClicked(object? sender, RoutedEventArgs e) => Vm.PauseCommand.Execute(null);
+    private void OnPlayClicked(object? sender, RoutedEventArgs e)
+    {
+        Vm.PlayCommand.Execute(null);
+    }
+
+    private void OnPauseClicked(object? sender, RoutedEventArgs e)
+    {
+        Vm.PauseCommand.Execute(null);
+    }
 
     // ── File dialogs ─────────────────────────────────────────────────────────
 
@@ -51,19 +62,23 @@ public partial class MainWindow : Window
         });
 
         if (file is not null)
+        {
             await Vm.SaveCircuit(file.Path.LocalPath);
+        }
     }
 
     private async void OnLoadClicked(object? sender, RoutedEventArgs e)
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title         = "Load Circuit",
-            AllowMultiple = false,
+            Title          = "Load Circuit",
+            AllowMultiple  = false,
             FileTypeFilter = new[] { new FilePickerFileType("JSON Circuit") { Patterns = new[] { "*.json" } } }
         });
 
         if (files.Count > 0)
+        {
             await Vm.LoadCircuit(files[0].Path.LocalPath);
+        }
     }
 }

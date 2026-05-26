@@ -27,7 +27,10 @@ public class Torch : Entity, IConnectable, IPowerable
         _placement = placement;
     }
 
-    public override bool IsPowering() => _on;
+    public override bool IsPowering()
+    {
+        return _on;
+    }
 
     /// <summary>Wall torches do not output power back toward the block they are mounted on.</summary>
     bool IConnectable.CanConnectTo(Direction direction)

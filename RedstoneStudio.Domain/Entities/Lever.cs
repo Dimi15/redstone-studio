@@ -2,7 +2,7 @@ namespace redstone_stone.Domain.Entities;
 
 public class Lever : Entity
 {
-    private bool _on { get; set; }
+    private bool _on;
 
     public Lever(bool on = false)
     {
@@ -13,12 +13,14 @@ public class Lever : Entity
     {
         return _on;
     }
-    
+
     public override void ChangeState()
     {
         _on = !_on;
     }
 
-    /// <summary>Returns whether the lever is currently switched on.</summary>
-    public bool IsOn => _on;
+    public bool IsOn
+    {
+        get { return _on; }
+    }
 }

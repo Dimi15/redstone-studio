@@ -30,14 +30,12 @@ classDiagram
             +Value int
             +Min$ SignalStrength
             +Max$ SignalStrength
-            +SignalStrength(value int)
         }
     }
 
     namespace DomainEntities {
         class Entity {
             <<abstract>>
-            +Position Position
             +IsPowered() bool
             +IsPowering() bool
             +ChangeState() void
@@ -45,15 +43,11 @@ classDiagram
         class Air
         class Block
         class Lever {
-            -_on bool
-            +Lever(on bool)
             +IsOn bool
             +IsPowering() bool
             +ChangeState() void
         }
         class Button {
-            -_ticksLeft int
-            -_pulseDuration int
             +IsPowering() bool
             +ChangeState() void
             +Tick() void
@@ -68,9 +62,6 @@ classDiagram
         }
         class Torch {
             +CurrentPower SignalStrength
-            -_on bool
-            -_placement Direction
-            -_vertical bool
             +IsOn bool
             +Placement Direction
             +IsPowering() bool
@@ -79,9 +70,6 @@ classDiagram
         }
         class Repeater {
             +CurrentPower SignalStrength
-            -_output Direction
-            -_delay int
-            +Repeater(output Direction, delay int)
             +Output Direction
             +Delay int
             +IsPowering() bool
@@ -98,28 +86,29 @@ classDiagram
 
     namespace Application {
         class CircuitBoard {
-            -_circuitBoard Entity[][]
             +Width int
             +Height int
             +GetEntity(p Position) Entity
             +PlaceEntity(e Entity, p Position) void
             +RemoveEntity(p Position) void
             +IsInBounds(p Position) bool
-            +AllPositions() IEnumerable~Position~
+            +AllPositions() List~Position~
         }
         class TickSimulator {
-            -_board CircuitBoard
             +TickCount int
             +Tick() void
             +Reset() void
-            -BfsFlood(seeds Queue) void
-            -ResolveTorches() void
-            -ResolveRepeaters() Queue
-            -ResolveLamps() void
         }
     }
 
     namespace Infrastructure {
+        class JsonCircuitRepository {
+            <<static>>
+            +SaveAsync(b CircuitBoard, path string)$ Task
+            +LoadAsync(path string)$ Task~CircuitBoard~
+            +Snapshot(b CircuitBoard)$ CircuitData
+            +FromSnapshot(d CircuitData)$ CircuitBoard
+        }
         class CircuitData {
             +Width int
             +Height int
@@ -132,11 +121,7 @@ classDiagram
             +Direction string
             +IsOn bool
             +Delay int
-        }
-        class JsonCircuitRepository {
-            <<static>>
-            +SaveAsync(b CircuitBoard, path string)$ Task
-            +LoadAsync(path string)$ Task~CircuitBoard~
+            +Vertical bool
         }
     }
 
@@ -150,6 +135,7 @@ classDiagram
             +BlockType BlockType
             +IsOn bool
             +PowerLevel int
+            +Direction Direction
             +Symbol string
             +CellColor string
             +ForeColor string
@@ -157,17 +143,17 @@ classDiagram
             +Refresh() void
         }
         class MainWindowViewModel {
+            +GridWidth int
+            +GridHeight int
             +Cells ObservableCollection~CellViewModel~
             +SelectedBlockType BlockType
             +SelectedDirection Direction
             +IsRunning bool
             +TickCount int
-            +PlayCommand IRelayCommand
-            +PauseCommand IRelayCommand
-            +StepCommand IRelayCommand
-            +ResetCommand IRelayCommand
             +SaveCircuit(path string) Task
             +LoadCircuit(path string) Task
+            +HistoryBack() void
+            +HistoryForward() void
         }
     }
 
@@ -196,25 +182,13 @@ classDiagram
     ViewModelBase <|-- CellViewModel
     ViewModelBase <|-- MainWindowViewModel
 
-    %% Application → Domain
-    CircuitBoard "1" *-- "many" Entity : contiene
-    TickSimulator --> CircuitBoard : usa
-    TickSimulator --> IPowerable : aggiorna
-    TickSimulator --> ITickable : chiama
-
-    %% Infrastructure → Application
-    JsonCircuitRepository --> CircuitBoard : crea
-    CircuitData "1" *-- "many" CellData
-
-    %% UI → Application
+    %% Dipendenze architetturali
+    CircuitBoard "1" *-- "many" Entity
+    TickSimulator --> CircuitBoard
+    JsonCircuitRepository --> CircuitBoard
+    JsonCircuitRepository --> CircuitData
     MainWindowViewModel --> CircuitBoard
     MainWindowViewModel --> TickSimulator
+    MainWindowViewModel --> JsonCircuitRepository
     MainWindowViewModel "1" *-- "many" CellViewModel
-
-    %% Value Object usage
-    Entity --> Position
-    Wire --> SignalStrength
-    Torch --> SignalStrength
-    Repeater --> SignalStrength
-    RedstoneLamp --> SignalStrength
 ```
