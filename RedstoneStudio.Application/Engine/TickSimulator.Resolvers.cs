@@ -9,7 +9,7 @@ namespace redstone_stone.Application.Engine;
 public partial class TickSimulator
 {
     // Re-evaluates every torch based on the maximum power of its neighbors.
-    // A torch turns off when any neighbor carries power (inversion logic).
+    // A torch turns off when any neighbor carries power.
     private void ResolveTorches()
     {
         foreach (Position pos in _board.AllPositions())
@@ -28,9 +28,10 @@ public partial class TickSimulator
         }
     }
 
-    // The repeater lifecycle processes in three steps: First, it decrements delays and fires active 
-    // signals (powering wires or solid blocks). Next, it immediately runs the BFS to update connecting 
-    // wires so chained repeaters don't stall. Finally, it reads inputs and queues newly powered repeaters.
+    // The repeater lifecycle is composed of three steps:
+    // It decrements delays and fires active signals (powering wires or solid blocks).
+    // Next it immediately runs the BFS to update connecting wires.
+    // Finally it reads inputs and queues newly powered repeaters.
     private void ResolveRepeaters()
     {
         List<(Position, Direction, int)> next = new List<(Position, Direction, int)>();
@@ -66,10 +67,10 @@ public partial class TickSimulator
             }
         }
 
-        // Flood wires before reading downstream repeater inputs
+        // Flood wires
         BfsFlood(seeds);
 
-        // Read inputs and schedule new outputs
+        // Read repeaters inputs and schedule new outputs
         foreach (Position pos in _board.AllPositions())
         {
             Entity entity = _board.GetEntity(pos);
@@ -89,12 +90,12 @@ public partial class TickSimulator
 
                 if (src is Block)
                 {
-                    // Block strongly powered by a fired repeater this tick
+                    // Hard pow
                     if (_poweredBlocks.Contains(inputPos))
                     {
                         inputPower = 15;
                     }
-                    // Block powered by an adjacent wire, source, or torch
+                    // Soft pow
                     else if (IsBlockPowered(inputPos))
                     {
                         inputPower = 15;
@@ -143,8 +144,7 @@ public partial class TickSimulator
         }
     }
 
-    // Lights lamps based on the maximum power among their four neighbors.
-    // Lamps are resolved last so they see power from repeaters that fired this tick.
+    // Lamps are resolved last so they can see power from repeaters that fired this tick.
     private void ResolveLamps()
     {
         foreach (Position pos in _board.AllPositions())
@@ -160,10 +160,10 @@ public partial class TickSimulator
         }
     }
 
-    // Returns the max power from 4 neighbors for Torches/Lamps.
-    // Contributors: Active direct sources and strongly powered blocks provide 15.
+    // Returns the max power from 4 neighbors for torches or lamps.
+    // Active direct sources and strongly powered blocks provide 15 power.
     // IPowerable entities (Wires/Torches/Repeaters) provide their CurrentPower.
-    // Lamps are ignored as they act only as power sinks.
+    // Lamps are ignored as they only "consume" power.
     private int MaxNeighborPower(Position pos)
     {
         int max = 0;
@@ -228,8 +228,8 @@ public partial class TickSimulator
     }
 
     // Returns true if any neighbor of blockPos is actively providing power.
-    // Used to detect the case: wire/source > block > repeater.
-    // The check runs after BFS, so wire power levels are already final.
+    // Made for case source > block > repeater.
+    // The check runs after BFS so that wire power levels are already in the final stage.
     private bool IsBlockPowered(Position blockPos)
     {
         foreach (Direction dir in Enum.GetValues<Direction>())
@@ -291,7 +291,7 @@ public partial class TickSimulator
         return false;
     }
 
-    // Returns the direction opposite to the given one (North <> South, East <> West).
+    // Helper function that returns the direction opposite to the given one.
     private static Direction Opposite(Direction d)
     {
         switch (d)
