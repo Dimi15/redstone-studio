@@ -186,13 +186,13 @@ public partial class TickSimulator
 
         foreach (Direction dir in Enum.GetValues<Direction>())
         {
-            Position np = pos.Move(dir);
-            if (!_board.IsInBounds(np))
+            Position newposition = pos.Move(dir);
+            if (!_board.IsInBounds(newposition))
             {
                 continue;
             }
 
-            Entity entity = _board.GetEntity(np);
+            Entity entity = _board.GetEntity(newposition);
 
             if (entity is RedstoneLamp)
             {
