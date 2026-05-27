@@ -9,7 +9,7 @@ public class Torch : Entity, IConnectable, IPowerable
     public SignalStrength CurrentPower { get; private set; } = new SignalStrength(15);
 
     private readonly Direction _placement;
-    private readonly bool _vertical;
+    private bool _vertical;
     private bool _on = true;
 
     public Torch(bool vertical, Direction placement) : base()
@@ -36,6 +36,11 @@ public class Torch : Entity, IConnectable, IPowerable
     public override bool IsPowering()
     {
         return _on;
+    }
+
+    public override void ChangeState()
+    {
+        _vertical = !_vertical;
     }
 
     bool IConnectable.CanConnectTo(Direction direction)
