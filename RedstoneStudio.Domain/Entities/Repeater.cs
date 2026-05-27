@@ -22,6 +22,8 @@ public class Repeater : Entity, IPowerable, IConnectable
 
     public Repeater(Direction output, int delay = 1) : base()
     {
+        CurrentPower = new SignalStrength(0);
+        
         _output = output;
         _on = false;
 
