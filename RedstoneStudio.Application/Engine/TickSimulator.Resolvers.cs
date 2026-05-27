@@ -22,9 +22,25 @@ public partial class TickSimulator
 
             Torch torch = (Torch)entity;
 
-            int maxPower = MaxNeighborPower(pos);
+            Position inputPos = pos.Move(torch.Placement);
+            int blockInputPower = 0;
+
+            if (_board.IsInBounds(inputPos) && !torch.IsVertical)
+            {
+                Entity src = _board.GetEntity(inputPos);
+
+                if (src is Block)
+                {
+                    // Block powered
+                    if (IsBlockPowered(inputPos))
+                    {
+                        blockInputPower = 15;
+                    }
+                }
+            }
+
             IPowerable powerableTorch = (IPowerable)torch;
-            powerableTorch.UpdatePower(new SignalStrength(maxPower));
+            powerableTorch.UpdatePower(new SignalStrength(blockInputPower));
         }
     }
 
@@ -275,7 +291,10 @@ public partial class TickSimulator
                 Torch torch = (Torch)entity;
                 if (torch.IsOn)
                 {
-                    return true;
+                    if (torch.IsVertical || Opposite(torch.Placement) != dir)
+                    {
+                        return true;
+                    }
                 }
             }
             else if (entity is Repeater)
