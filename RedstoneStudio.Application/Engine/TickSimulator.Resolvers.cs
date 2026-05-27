@@ -203,7 +203,7 @@ public partial class TickSimulator
 
             if (entity is Block)
             {
-                if (_poweredBlocks.Contains(np))
+                if (_poweredBlocks.Contains(newposition))
                 {
                     p = 15; // block powered by a fired repeater this tick
                 }

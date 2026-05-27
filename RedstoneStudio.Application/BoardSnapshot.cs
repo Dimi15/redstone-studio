@@ -53,7 +53,7 @@ public class BoardSnapshot
         {
             return new CellSnapshot { X = pos.X, Y = pos.Y, Type = "Wire" };
         }
-
+        
         if (entity is Block)
         {
             return new CellSnapshot { X = pos.X, Y = pos.Y, Type = "Block" };
