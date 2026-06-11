@@ -1,9 +1,10 @@
+using System;
+using System.IO;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
-using System.Linq;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using redstone_stone.ViewModels;
 using redstone_stone.Views;
 
@@ -20,10 +21,24 @@ public partial class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            MainWindow window = new MainWindow
             {
                 DataContext = new MainWindowViewModel(),
             };
+            
+            try
+            {
+                using (Stream iconStream = AssetLoader.Open(new Uri("avares://redstoneStudio.UI/icon/redstone.png")))
+                {
+                    window.Icon = new WindowIcon(iconStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Could not load app icon: " + ex.Message);
+            }
+
+            desktop.MainWindow = window;
         }
 
         base.OnFrameworkInitializationCompleted();

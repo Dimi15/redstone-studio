@@ -8,10 +8,21 @@
         <RootNamespace>redstoneSim.UI</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <ApplicationIcon>..\icon\redstone.ico</ApplicationIcon>
+    </PropertyGroup>
+
     <ItemGroup>
-        <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
-        <Folder Include="UI\" />
+        <AvaloniaResource Include="..\icon\redstone.ico">
+            <Link>icon\redstone.ico</Link>
+        </AvaloniaResource>
+        <AvaloniaResource Include="..\icon\redstone.png">
+            <Link>icon\redstone.png</Link>
+        </AvaloniaResource>
+        <AvaloniaResource Include="..\icon\redstone.icns">
+            <Link>icon\redstone.icns</Link>
+        </AvaloniaResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -28,6 +39,5 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RedstoneStudio.Application\RedstoneStudio.Application.csproj" />
-      <ProjectReference Include="..\RedstoneStudio.Infrastructure\RedstoneStudio.Infrastructure.csproj" />
     </ItemGroup>
 </Project>

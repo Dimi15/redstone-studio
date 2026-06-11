@@ -1,0 +1,12 @@
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/bin/Debug/net8.0/RedstoneSim.Domain.deps.json
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/bin/Debug/net8.0/RedstoneSim.Domain.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/bin/Debug/net8.0/RedstoneSim.Domain.pdb
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.AssemblyInfoInputs.cache
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.AssemblyInfo.cs
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.csproj.CoreCompileInputs.cache
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.sourcelink.json
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/refint/RedstoneSim.Domain.dll
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/RedstoneSim.Domain.pdb
+/Users/dimi/Developer/School/Informatica/redstone-sim/RedstoneSim.Domain/obj/Debug/net8.0/ref/RedstoneSim.Domain.dll
